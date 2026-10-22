@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khu Vực Làm Việc Kỹ Thuật Viên (KTV) - TechCare Pro</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h2>💻🔧 TechCare Pro</h2>
+            <small>Cổng Quản Trị Hệ Thống</small>
+        </div>
+        <div class="sidebar-nav">
+            <!-- Tự động sinh theo quyền thông qua generateSidebar -->
+        </div>
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">K</div>
+                <div>
+                    <div class="admin-name" id="adminName">Kỹ thuật viên</div>
+                    <div class="admin-role" id="adminRole">Kỹ thuật viên (KTV)</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="handleSignOut('../index.html')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+                <h1>🛠️ Phiếu Sửa Chữa Của Tôi (Kỹ Thuật Viên)</h1>
+                <p>Tiếp nhận máy được giao, kiểm tra tồn kho linh kiện thay thế, cập nhật tiến độ và báo giá</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="warehouse.html" class="btn-action warning"><i class="fas fa-boxes"></i> Tra cứu Kho & Gửi Yêu Cầu Linh Kiện</a>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="tab active" onclick="filterKtvTickets('all', this)"><i class="fas fa-list"></i> Tất cả phiếu của tôi</button>
+            <button class="tab" onclick="filterKtvTickets('dang_kiem_tra', this)"><i class="fas fa-stethoscope"></i> Cần chẩn đoán / Báo giá</button>
+            <button class="tab" onclick="filterKtvTickets('dang_sua', this)"><i class="fas fa-wrench"></i> Đang sửa chữa</button>
+            <button class="tab" onclick="filterKtvTickets('cho_linh_kien', this)"><i class="fas fa-box-open"></i> Đang chờ linh kiện</button>
+            <button class="tab" onclick="filterKtvTickets('hoan_thanh', this)"><i class="fas fa-check-double"></i> Đã hoàn tất</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="ticketSearch" placeholder="🔍 Tìm theo mã ticket, tên khách hàng, dòng máy..." oninput="applySearch()">
+        </div>
+
+        <!-- Tickets Table for KTV -->
+        <div class="card">
+            <div class="card-body no-pad">
+                <div id="ticketsLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Đang tải danh sách thiết bị của bạn...</p>
+                </div>
+                <table id="ktvTicketsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Mã Ticket</th>
+                            <th>Khách Hàng</th>
+                            <th>Thiết Bị</th>
+                            <th>Hiện Trạng Lỗi</th>
+                            <th>Trạng Thái</th>
+                            <th>Báo Giá & Linh Kiện</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ktvTicketsBody"></tbody>
+                </table>
+                <div id="ktvTicketsEmpty" class="empty-state" style="display: none;">
+                    <span class="icon">✨</span>
+                    <p>Hiện bạn không có phiếu sửa chữa nào trong mục này.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal KTV Xử Lý & Đề Xuất Linh Kiện (Có Kiểm Tra Kho Thực Tế) -->
+    <div id="ktvModal" class="modal-overlay">
+        <div class="modal" style="max-width: 850px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="mTicketId" style="margin: 0; color: var(--primary);">TK-XXXXX</h3>
+                    <small id="mCustomerInfo" style="color: #666;"></small>
+                </div>
+                <button class="modal-close" onclick="closeKtvModal()">&times;</button>
+            </div>
+            <form id="ktvActionForm" onsubmit="handleSaveKtvAction(event)">
+                <input type="hidden" id="currentDocId">
+                <div class="modal-body">
+                    <!-- Device Info -->
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                        <div class="form-row" style="margin-bottom: 5px;">
+                            <div><strong>Thiết bị:</strong> <span id="mDevice"></span></div>
+                            <div><strong>Serial:</strong> <span id="mSerial"></span></div>
+                        </div>
+                        <div><strong>Mô tả lỗi từ khách:</strong> <span id="mIssue"></span></div>
+                    </div>
+
+                    <!-- 1. Diagnosis -->
+                    <div class="form-group">
+                        <label for="mDiagnosis"><strong>1. Chẩn đoán kỹ thuật chuyên sâu (*)</strong></label>
+                        <textarea id="mDiagnosis" rows="2" placeholder="vd: Hỏng chip nguồn, màn hình vỡ panel, ổ cứng bị bad sector..." required></textarea>
+                    </div>
+
+                    <!-- 2. Tra Cứu & Đề Xuất Linh Kiện Trong Kho -->
+                    <div class="card" style="box-shadow: none; border: 1px solid #e0e0e0; margin-bottom: 15px;">
+                        <div class="card-header" style="padding: 10px 14px; background: #eef2f7;">
+                            <h4 style="margin: 0; font-size: 0.95rem;"><i class="fas fa-boxes"></i> 2. Chọn Linh Kiện Từ Kho Để Thay Thế / Sửa Chữa</h4>
+                        </div>
+                        <div class="card-body" style="padding: 12px;">
+                            <div class="form-row" style="align-items: flex-end; margin-bottom: 10px;">
+                                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                                    <label>Chọn linh kiện sẵn có trong kho:</label>
+                                    <select id="mPartSelect" onchange="onPartSelectChange()">
+                                        <option value="">-- Chọn linh kiện trong kho --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label>Tồn kho hiện có:</label>
+                                    <input type="text" id="mPartStock" readonly style="background: #f0f0f0; font-weight: bold;">
+                                </div>
+                                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                    <label>SL dùng:</label>
+                                    <input type="number" id="mPartQty" value="1" min="1">
+                                </div>
+                                <button type="button" class="btn-action primary" onclick="addPartToQuote()" style="height: 40px;">
+                                    <i class="fas fa-plus"></i> Thêm vào phiếu
+                                </button>
+                            </div>
+                            <small id="stockWarning" style="color: #d32f2f; display: none; font-weight: bold;">⚠️ Kho không đủ số lượng sẵn có! Bạn có thể gửi yêu cầu đặt linh kiện đặc thù.</small>
+
+                            <!-- Bảng linh kiện / dịch vụ trong phiếu -->
+                            <table style="width: 100%; margin-top: 10px;">
+                                <thead>
+                                    <tr style="background: #fafafa;">
+                                        <th>Linh kiện / Hạng mục sửa</th>
+                                        <th style="width: 70px;">SL</th>
+                                        <th style="width: 130px;">Đơn giá</th>
+                                        <th style="width: 130px;">Thành tiền</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mQuoteBody"></tbody>
+                            </table>
+                            <div style="text-align: right; margin-top: 10px;">
+                                <strong>Tổng chi phí: <span id="mTotalCost" style="color: var(--danger); font-size: 1.1rem;">0 đ</span></strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Status -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mStatus"><strong>3. Cập nhật trạng thái phiếu (*)</strong></label>
+                            <select id="mStatus" required>
+                                <option value="dang_kiem_tra">Đang kiểm tra / Chẩn đoán</option>
+                                <option value="cho_bao_gia">Chờ khách duyệt báo giá</option>
+                                <option value="dang_sua">Đang tiến hành sửa chữa</option>
+                                <option value="cho_linh_kien">Chờ đặt linh kiện từ kho</option>
+                                <option value="hoan_thanh">Đã sửa xong & Kiểm tra hoàn tất</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mNotes">Ghi chú thêm cho CSKH / Kho:</label>
+                            <input type="text" id="mNotes" placeholder="vd: Đã test 2 tiếng ổn định, khách có thể đến lấy">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeKtvModal()">Đóng</button>
+                    <button type="submit" id="btnSaveKtv" class="btn btn-save"><i class="fas fa-save"></i> Cập nhật phiếu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/auth.js"></script>
+
+    <script>
+        let currentKtvUser = null;
+        let myTickets = [];
+        let inventoryList = [];
+        let currentFilterStatus = 'all';
+
+        async function initPage() {
+            const { user, userData } = await checkAdminAuth('../index.html');
+            currentKtvUser = { ...userData, uid: user.uid };
+            document.getElementById('adminName').textContent = userData.fullName || user.email;
+            document.getElementById('adminAvatar').textContent = (userData.fullName || 'K').charAt(0).toUpperCase();
+            document.getElementById('adminRole').innerHTML = getRoleBadge(userData.role);
+            generateSidebar(userData.role, 'ktv-workspace');
+
+            await loadInventoryOptions();
+            await loadMyTickets();
+        }
+
+        async function loadInventoryOptions() {
+            try {
+                const snapshot = await db.collection('inventory').orderBy('name', 'asc').get();
+                inventoryList = [];
+                const select = document.getElementById('mPartSelect');
+                select.innerHTML = '<option value="">-- Chọn linh kiện trong kho --</option>';
+
+                snapshot.forEach(doc => {
+                    const p = { id: doc.id, ...doc.data() };
+                    inventoryList.push(p);
+                    select.innerHTML += `<option value="${p.id}" data-price="${p.sellPrice || 0}" data-stock="${p.quantity || 0}" data-name="${p.name}">
+                        ${p.name} (Tồn: ${p.quantity || 0} | ${formatVND(p.sellPrice || 0)})
+                    </option>`;
+                });
+            } catch (e) {
+                console.error('Lỗi tải kho linh kiện:', e);
+            }
+        }
+
+        function onPartSelectChange() {
+            const select = document.getElementById('mPartSelect');
+            const selectedOpt = select.options[select.selectedIndex];
+            if (!select.value) {
+                document.getElementById('mPartStock').value = '';
+                document.getElementById('stockWarning').style.display = 'none';
+                return;
+            }
+            const stock = Number(selectedOpt.getAttribute('data-stock') || 0);
+            document.getElementById('mPartStock').value = `${stock} cái`;
+
+            const qty = Number(document.getElementById('mPartQty').value || 1);
+            if (stock < qty) {
+                document.getElementById('stockWarning').style.display = 'block';
+            } else {
+                document.getElementById('stockWarning').style.display = 'none';
+            }
+        }
+
+        async function loadMyTickets() {
+            try {
+                document.getElementById('ticketsLoading').style.display = 'block';
+                const snapshot = await db.collection('tickets').orderBy('createdAt', 'desc').get();
+                myTickets = [];
+
+                snapshot.forEach(doc => {
+                    const t = { id: doc.id, ...doc.data() };
+                    // Lọc phiếu được giao cho KTV hiện tại hoặc chưa phân công
+                    const isAssignedToMe = (t.assignedKtvId === currentKtvUser.uid) || 
+                                           (t.assignedKtvName && t.assignedKtvName.toLowerCase() === (currentKtvUser.fullName || '').toLowerCase()) ||
+                                           (currentKtvUser.role === 'admin'); // Admin xem được hết
+                    if (isAssignedToMe) {
+                        myTickets.push(t);
+                    }
+                });
+
+                applySearch();
+            } catch (err) {
+                console.error('Lỗi tải phiếu KTV:', err);
+                showToast('Lỗi tải phiếu: ' + err.message, 'error');
+                document.getElementById('ticketsLoading').style.display = 'none';
+            }
+        }
+
+        function filterKtvTickets(status, btn) {
+            currentFilterStatus = status;
+            document.querySelectorAll('.filter-tabs .tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            applySearch();
+        }
+
+        function applySearch() {
+            const kw = document.getElementById('ticketSearch').value.toLowerCase().trim();
+
+            const filtered = myTickets.filter(t => {
+                const matchKw = (t.ticketId && t.ticketId.toLowerCase().includes(kw)) ||
+                                (t.customerName && t.customerName.toLowerCase().includes(kw)) ||
+                                (t.deviceModel && t.deviceModel.toLowerCase().includes(kw));
+
+                const matchStatus = (currentFilterStatus === 'all') || (t.status === currentFilterStatus);
+
+                return matchKw && matchStatus;
+            });
+
+            renderKtvTickets(filtered);
+        }
+
+        function renderKtvTickets(list) {
+            document.getElementById('ticketsLoading').style.display = 'none';
+            const table = document.getElementById('ktvTicketsTable');
+            const tbody = document.getElementById('ktvTicketsBody');
+            const empty = document.getElementById('ktvTicketsEmpty');
+
+            if (list.length === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            table.style.display = 'table';
+            tbody.innerHTML = '';
+
+            list.forEach(t => {
+                const total = t.totalCost ? formatVND(t.totalCost) : '0 đ';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong style="color: var(--accent-dark);">${t.ticketId}</strong></td>
+                        <td><strong>${t.customerName}</strong><br><small>${t.customerPhone}</small></td>
+                        <td>${t.deviceType === 'laptop' ? '💻' : '🖥️'} ${t.deviceBrand || ''} ${t.deviceModel || ''}</td>
+                        <td><span style="font-size:0.9rem;">${t.issueDescription || '---'}</span></td>
+                        <td>${getStatusBadge(t.status)}</td>
+                        <td><strong style="color: var(--danger);">${total}</strong></td>
+                        <td>
+                            <button class="btn-action primary" style="padding: 5px 12px; font-size: 0.85rem;" onclick="openKtvModal('${t.id}')">
+                                <i class="fas fa-wrench"></i> Xử lý & Báo giá
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        let currentActiveTicket = null;
+        let currentQuoteItems = [];
+
+        function openKtvModal(docId) {
+            const t = myTickets.find(item => item.id === docId);
+            if (!t) return;
+
+            currentActiveTicket = t;
+            document.getElementById('currentDocId').value = docId;
+            document.getElementById('mTicketId').textContent = t.ticketId;
+            document.getElementById('mCustomerInfo').textContent = `Khách hàng: ${t.customerName} | SĐT: ${t.customerPhone}`;
+            document.getElementById('mDevice').textContent = `${t.deviceBrand || ''} ${t.deviceModel || ''}`;
+            document.getElementById('mSerial').textContent = t.serialNumber || 'Không có';
+            document.getElementById('mIssue').textContent = t.issueDescription || '';
+
+            document.getElementById('mDiagnosis').value = t.diagnosis || '';
+            document.getElementById('mStatus').value = t.status || 'dang_kiem_tra';
+            document.getElementById('mNotes').value = t.handoverNotes || '';
+
+            currentQuoteItems = (t.quotation && Array.isArray(t.quotation)) ? [...t.quotation] : [];
+            renderQuoteList();
+
+            document.getElementById('ktvModal').classList.add('active');
+        }
+
+        function closeKtvModal() {
+            document.getElementById('ktvModal').classList.remove('active');
+        }
+
+        function addPartToQuote() {
+            const select = document.getElementById('mPartSelect');
+            if (!select.value) {
+                showToast('Vui lòng chọn linh kiện trong kho!', 'warning');
+                return;
+            }
+
+            const opt = select.options[select.selectedIndex];
+            const name = opt.getAttribute('data-name');
+            const price = Number(opt.getAttribute('data-price') || 0);
+            const stock = Number(opt.getAttribute('data-stock') || 0);
+            const qty = Number(document.getElementById('mPartQty').value || 1);
+
+            if (stock < qty) {
+                if (!confirm(`Kho hiện chỉ còn ${stock} cái, bạn có muốn thêm và tạo yêu cầu đặt hàng bổ sung không?`)) {
+                    return;
+                }
+            }
+
+            currentQuoteItems.push({
+                partId: select.value,
+                name: name,
+                qty: qty,
+                price: price
+            });
+
+            renderQuoteList();
+            showToast(`Đã thêm linh kiện ${name} vào phiếu!`, 'success');
+        }
+
+        function removeQuoteRow(index) {
+            currentQuoteItems.splice(index, 1);
+            renderQuoteList();
+        }
+
+        function renderQuoteList() {
+            const tbody = document.getElementById('mQuoteBody');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            currentQuoteItems.forEach((item, idx) => {
+                const sub = (item.qty || 1) * (item.price || 0);
+                total += sub;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.qty}</td>
+                        <td>${formatVND(item.price)}</td>
+                        <td><strong>${formatVND(sub)}</strong></td>
+                        <td><button type="button" style="color:red; background:none; border:none; cursor:pointer;" onclick="removeQuoteRow(${idx})">&times;</button></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('mTotalCost').textContent = formatVND(total);
+        }
+
+        async function handleSaveKtvAction(e) {
+            e.preventDefault();
+            const docId = document.getElementById('currentDocId').value;
+            const btn = document.getElementById('btnSaveKtv');
+
+            const diagnosis = document.getElementById('mDiagnosis').value.trim();
+            const newStatus = document.getElementById('mStatus').value;
+            const notes = document.getElementById('mNotes').value.trim();
+
+            let total = 0;
+            currentQuoteItems.forEach(q => total += (q.qty * q.price));
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+                await db.collection('tickets').doc(docId).update({
+                    diagnosis,
+                    quotation: currentQuoteItems,
+                    totalCost: total,
+                    status: newStatus,
+                    handoverNotes: notes,
+                    assignedKtvId: currentKtvUser.uid,
+                    assignedKtvName: currentKtvUser.fullName,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('✅ Đã cập nhật kết quả xử lý và linh kiện thành công!', 'success');
+                closeKtvModal();
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật phiếu';
+                loadMyTickets();
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật phiếu';
+                showToast('Lỗi lưu: ' + err.message, 'error');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

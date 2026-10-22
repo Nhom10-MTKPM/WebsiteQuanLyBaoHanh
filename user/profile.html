@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ Cá Nhân & Thiết Bị PC/Laptop - TechCare Pro</title>
+    <!-- Giữ nguyên toàn bộ đường link -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Làm đẹp giao diện */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f4f7f6);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            border: none;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 18px 25px;
+            border-bottom: none;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+            background-color: #fcfcfc;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+            background-color: #fff;
+        }
+
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border-color: #dee2e6;
+        }
+        
+        input[readonly]:focus {
+            box-shadow: none;
+            border-color: #dee2e6;
+        }
+
+        .btn-action.primary, .btn-save {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+            text-decoration: none;
+        }
+
+        .btn-action.primary:hover, .btn-save:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40,167,69,0.4);
+            color: white;
+        }
+
+        .btn-sm.delete {
+            background: #fff;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-sm.delete:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        /* Thiết kế Item Thiết bị */
+        .device-item {
+            background: #fff;
+            border-left: 4px solid #007bff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+            border-top: 1px solid #f1f1f1;
+            border-right: 1px solid #f1f1f1;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .device-item:hover {
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            transform: translateX(4px);
+        }
+
+        /* Customizing the Modal for a better look */
+        .modal {
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #6f42c1, #4e2a84);
+            color: white;
+            padding: 20px 25px;
+            border-bottom: none;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: white;
+        }
+
+        .modal-close {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: white;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-footer {
+            padding: 15px 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            background: #e9ecef;
+            color: #495057;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #ced4da;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+    <!-- Customer Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h2>💻 TechCare Pro</h2>
+            <small>Cổng Khách Hàng</small>
+        </div>
+        <div class="sidebar-nav">
+            <a href="dashboard.html"><span class="icon"><i class="fas fa-home"></i></span> Trang chủ</a>
+            <a href="new-request.html"><span class="icon"><i class="fas fa-wrench"></i></span> Đặt lịch hẹn sửa chữa</a>
+            <a href="my-tickets.html"><span class="icon"><i class="fas fa-ticket-alt"></i></span> Phiếu sửa chữa của tôi</a>
+            <a href="profile.html" class="active"><span class="icon"><i class="fas fa-laptop"></i></span> Hồ sơ & Thiết bị PC/Laptop</a>
+            <a href="history.html"><span class="icon"><i class="fas fa-history"></i></span> Lịch sử sửa chữa</a>
+            <a href="notifications.html"><span class="icon"><i class="fas fa-bell"></i></span> Thông báo hệ thống</a>
+            <a href="reviews.html"><span class="icon"><i class="fas fa-star"></i></span> Đánh giá dịch vụ</a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <div class="admin-avatar" id="userAvatar" style="background: var(--success); color: #fff;">U</div>
+                <div>
+                    <div class="admin-name" id="userName">Khách hàng</div>
+                    <div class="admin-role" style="color: #81c784;">Tài khoản Khách hàng</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="handleSignOut('../index.html')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>👤 Thông Tin Cá Nhân & Thiết Bị PC / Laptop </h1>
+            <p>Quản lý thông tin liên hệ và đăng ký trước thiết bị máy tính để nhận diện bảo hành nhanh chóng</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 30px;">
+            <!-- Profile Info Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-edit"></i> Thông Tin Cá Nhân</h2>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm" onsubmit="handleSaveProfile(event)">
+                        <div class="form-group">
+                            <label for="profFullName">Họ và tên (*)</label>
+                            <input type="text" id="profFullName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profEmail">Địa chỉ Email</label>
+                            <input type="email" id="profEmail" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profPhone">Số điện thoại liên hệ (*)</label>
+                            <input type="tel" id="profPhone" required placeholder="0912345678">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profAddress">Địa chỉ nơi ở (Hỗ trợ giao nhận máy tận nơi)</label>
+                            <input type="text" id="profAddress" placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện...">
+                        </div>
+
+                        <button type="submit" id="btnSaveProfile" class="btn-action primary" style="width: 100%; margin-top: 10px;">
+                            <i class="fas fa-save"></i> Cập nhật hồ sơ
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Devices Card (US.08) -->
+            <div class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #17a2b8, #138496);">
+                    <h2><i class="fas fa-laptop"></i> Thiết Bị Đã Đăng Ký</h2>
+                    <button class="btn-action primary" style="padding: 8px 16px; font-size: 0.9rem; background: linear-gradient(135deg, #ffc107, #ffb300); color: #333; box-shadow: none;" onclick="openDeviceModal()">
+                        <i class="fas fa-plus"></i> Thêm máy mới
+                    </button>
+                </div>
+                <div class="card-body no-pad">
+                    <div id="deviceLoading" class="loading" style="padding: 30px; text-align: center;">
+                        <div class="spinner"></div>
+                        <p style="color: #666;">Đang tải danh sách thiết bị...</p>
+                    </div>
+                    <div id="devicesList" style="display: none; padding: 20px;"></div>
+                    <div id="devicesEmpty" class="empty-state" style="display: none; padding: 40px 20px; text-align: center;">
+                        <span class="icon" style="font-size: 3rem; display: block; margin-bottom: 10px;">💻</span>
+                        <p style="color: #777;">Bạn chưa lưu thiết bị PC/Laptop nào.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Add/Edit Device (US.08) -->
+    <div id="deviceModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="devModalTitle"><i class="fas fa-laptop"></i> Đăng Ký Thiết Bị Máy Tính Mới</h3>
+                <button class="modal-close" onclick="closeDeviceModal()">&times;</button>
+            </div>
+            <form id="deviceForm" onsubmit="handleSaveDevice(event)">
+                <input type="hidden" id="editDeviceId">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="devType">Loại thiết bị (*)</label>
+                            <select id="devType" required>
+                                <option value="laptop">Laptop / Notebook</option>
+                                <option value="pc">Máy tính để bàn PC</option>
+                                <option value="allinone">Máy tính All-In-One</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="devBrand">Hãng sản xuất (*)</label>
+                            <input type="text" id="devBrand" placeholder="Dell, Asus, HP, Lenovo, Apple..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="devModel">Model máy (*)</label>
+                            <input type="text" id="devModel" placeholder="Inspiron 15 3520" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="devSerial">Số Serial / Service Tag (*)</label>
+                            <input type="text" id="devSerial" placeholder="DELL-SN-12345" required style="text-transform:uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="devPurchaseDate">Ngày mua máy</label>
+                            <input type="date" id="devPurchaseDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="devWarrantyExpiry">Hạn bảo hành gốc</label>
+                            <input type="date" id="devWarrantyExpiry">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="devNotes">Ghi chú cấu hình máy (CPU, RAM, Ổ cứng...)</label>
+                        <input type="text" id="devNotes" placeholder="vd: Core i5 12400, 16GB RAM, SSD 512GB">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeDeviceModal()">Đóng</button>
+                    <button type="submit" id="btnSubmitDevice" class="btn btn-save"><i class="fas fa-save"></i> Lưu thiết bị</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/auth.js"></script>
+
+    <script>
+        let currentAuthUser = null;
+        let customerData = null;
+        let userDevices = [];
+
+        async function initPage() {
+            const { user, userData } = await checkCustomerAuth('../index.html');
+            currentAuthUser = user;
+            customerData = userData;
+
+            const name = userData.fullName || user.displayName || user.email.split('@')[0];
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+
+            // Populate profile form
+            document.getElementById('profFullName').value = userData.fullName || '';
+            document.getElementById('profEmail').value = user.email || '';
+            document.getElementById('profPhone').value = userData.phone || '';
+            document.getElementById('profAddress').value = userData.address || '';
+
+            loadDevices();
+        }
+
+        async function handleSaveProfile(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveProfile');
+            try {
+                btn.disabled = true;
+                const newName = document.getElementById('profFullName').value.trim();
+                const newPhone = document.getElementById('profPhone').value.trim();
+                const newAddress = document.getElementById('profAddress').value.trim();
+
+                await db.collection('users').doc(currentAuthUser.uid).update({
+                    fullName: newName,
+                    phone: newPhone,
+                    address: newAddress,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Đã lưu thông tin cá nhân thành công!', 'success');
+                btn.disabled = false;
+                document.getElementById('userName').textContent = newName;
+            } catch (err) {
+                btn.disabled = false;
+                showToast('Lỗi cập nhật hồ sơ: ' + err.message, 'error');
+            }
+        }
+
+        async function loadDevices() {
+            try {
+                document.getElementById('deviceLoading').style.display = 'block';
+                const snapshot = await db.collection('users').doc(currentAuthUser.uid).collection('devices').get();
+                userDevices = [];
+                snapshot.forEach(doc => {
+                    userDevices.push({ id: doc.id, ...doc.data() });
+                });
+                renderDevices(userDevices);
+            } catch (err) {
+                console.error('Error loading devices:', err);
+                document.getElementById('deviceLoading').style.display = 'none';
+            }
+        }
+
+        function renderDevices(list) {
+            document.getElementById('deviceLoading').style.display = 'none';
+            const container = document.getElementById('devicesList');
+            const empty = document.getElementById('devicesEmpty');
+
+            if (list.length === 0) {
+                container.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            container.style.display = 'block';
+            container.innerHTML = '';
+
+            list.forEach(d => {
+                // Tinh chỉnh lại HTML cho mượt mà theo CSS mới
+                container.innerHTML += `
+                    <div class="device-item">
+                        <div>
+                            <div style="font-weight: 700; font-size: 1.1rem; color: #007bff; margin-bottom: 5px;">
+                                ${d.type === 'laptop' ? '💻' : '🖥️'} ${d.brand} ${d.model}
+                            </div>
+                            <div style="font-size: 0.9rem; color: #555; margin-bottom: 3px;">
+                                <strong>Serial:</strong> <span style="font-family: monospace; background:#f0f0f0; padding:2px 6px; border-radius:4px;">${d.serialNumber}</span>
+                                ${d.warrantyExpiry ? ` <span style="margin: 0 5px;">|</span> <strong>Hạn BH:</strong> ${d.warrantyExpiry}` : ''}
+                            </div>
+                            ${d.notes ? `<div style="font-size: 0.85rem; color: #777; font-style: italic;"><i class="fas fa-info-circle"></i> ${d.notes}</div>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="new-request.html?deviceId=${d.id}&brand=${encodeURIComponent(d.brand)}&model=${encodeURIComponent(d.model)}&serial=${encodeURIComponent(d.serialNumber)}" class="btn-action primary" style="padding: 8px 12px; font-size: 0.85rem;" title="Đặt lịch sửa máy này">
+                                <i class="fas fa-wrench"></i> Sửa máy này
+                            </a>
+                            <button class="btn-sm delete" style="padding: 8px 12px;" onclick="deleteDevice('${d.id}', '${d.brand} ${d.model}')" title="Xóa thiết bị">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openDeviceModal() {
+            document.getElementById('deviceForm').reset();
+            document.getElementById('editDeviceId').value = '';
+            document.getElementById('devModalTitle').innerHTML = '<i class="fas fa-laptop"></i> Đăng Ký Thiết Bị Máy Tính Mới';
+            document.getElementById('deviceModal').classList.add('active');
+        }
+
+        function closeDeviceModal() {
+            document.getElementById('deviceModal').classList.remove('active');
+        }
+
+        async function handleSaveDevice(e) {
+            e.preventDefault();
+            const id = document.getElementById('editDeviceId').value;
+            const btn = document.getElementById('btnSubmitDevice');
+
+            const payload = {
+                type: document.getElementById('devType').value,
+                brand: document.getElementById('devBrand').value.trim(),
+                model: document.getElementById('devModel').value.trim(),
+                serialNumber: document.getElementById('devSerial').value.trim().toUpperCase(),
+                purchaseDate: document.getElementById('devPurchaseDate').value,
+                warrantyExpiry: document.getElementById('devWarrantyExpiry').value,
+                notes: document.getElementById('devNotes').value.trim(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                btn.disabled = true;
+                if (id) {
+                    await db.collection('users').doc(currentAuthUser.uid).collection('devices').doc(id).update(payload);
+                    showToast('Đã cập nhật thông tin thiết bị!', 'success');
+                } else {
+                    payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('users').doc(currentAuthUser.uid).collection('devices').add(payload);
+                    showToast('Đã lưu thiết bị vào tài khoản!', 'success');
+                }
+                closeDeviceModal();
+                btn.disabled = false;
+                loadDevices();
+            } catch (err) {
+                btn.disabled = false;
+                showToast('Lỗi lưu thiết bị: ' + err.message, 'error');
+            }
+        }
+
+        async function deleteDevice(id, name) {
+            if (confirm(`Bạn có chắc muốn xóa thiết bị "${name}" khỏi danh sách?`)) {
+                try {
+                    await db.collection('users').doc(currentAuthUser.uid).collection('devices').doc(id).delete();
+                    showToast('Đã xóa thiết bị!', 'success');
+                    loadDevices();
+                } catch (err) {
+                    showToast('Lỗi: ' + err.message, 'error');
+                }
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra cứu Kho & Bán Hàng (Sale / Tiếp Nhận) - TechCare Pro</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h2>💻🔧 TechCare Pro</h2>
+            <small>Cổng Quản Trị Hệ Thống</small>
+        </div>
+        <div class="sidebar-nav">
+            <!-- Tự động sinh theo quyền thông qua generateSidebar -->
+        </div>
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">S</div>
+                <div>
+                    <div class="admin-name" id="adminName">Sale / Tiếp nhận</div>
+                    <div class="admin-role" id="adminRole">NV Tiếp nhận / CSKH</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="handleSignOut('../index.html')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+                <h1>🛒 Tra Cứu Tồn Kho & Tư Vấn Bán Hàng (Sale / CSKH)</h1>
+                <p>Kiểm tra tình trạng còn hàng trong kho tức thì để báo giá và bán/thay thế cho khách hàng</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="tickets.html?action=new" class="btn-action primary"><i class="fas fa-plus"></i> Tạo phiếu tiếp nhận máy</a>
+            </div>
+        </div>
+
+        <!-- Search Bar & Filters -->
+        <div class="search-bar">
+            <input type="text" id="partSearch" placeholder="🔍 Nhập tên linh kiện, mã linh kiện (RAM, SSD, Pin, Màn hình...)" oninput="filterParts()">
+            <select id="partCategory" onchange="filterParts()">
+                <option value="all">Tất cả danh mục linh kiện</option>
+                <option value="ram">Bộ nhớ RAM</option>
+                <option value="ssd">Ổ cứng SSD / HDD</option>
+                <option value="screen">Màn hình LCD / IPS</option>
+                <option value="battery">Pin Laptop</option>
+                <option value="keyboard">Bàn phím Laptop</option>
+                <option value="mainboard">Mainboard / Chipset / IC</option>
+                <option value="other">Vật tư phụ / Sạc / Phụ kiện</option>
+            </select>
+            <select id="stockFilter" onchange="filterParts()">
+                <option value="all">Tất cả trạng thái kho</option>
+                <option value="in_stock">Còn hàng (Sẵn sàng bán)</option>
+                <option value="out_stock">Hết hàng / Sắp hết</option>
+            </select>
+        </div>
+
+        <!-- Inventory List for Sales -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-boxes"></i> Danh Mục Linh Kiện Trong Kho (Thời Gian Thực)</h2>
+                <span id="totalItemsBadge" class="badge badge-info">Đang tải...</span>
+            </div>
+            <div class="card-body no-pad">
+                <div id="invLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Đang tải dữ liệu kho...</p>
+                </div>
+                <table id="partsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Mã LK</th>
+                            <th>Tên Linh Kiện</th>
+                            <th>Danh Mục</th>
+                            <th>Tồn Kho Thực Tế</th>
+                            <th>Giá Niêm Yết / Bán Cho Khách</th>
+                            <th>Tình Trạng Kho</th>
+                            <th>Tư Vấn Khách</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partsBody"></tbody>
+                </table>
+                <div id="partsEmpty" class="empty-state" style="display: none;">
+                    <span class="icon">📦</span>
+                    <p>Không tìm thấy linh kiện nào phù hợp.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Tư Vấn Báo Giá Nhanh -->
+    <div id="consultModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-comment-dollar"></i> Tư Vấn Báo Giá Cho Khách Hàng</h3>
+                <button class="modal-close" onclick="closeConsultModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                    <h4 id="consultPartName" style="margin: 0 0 5px 0;">Tên linh kiện</h4>
+                    <p id="consultPartCode" style="margin: 0; color: #666; font-size: 0.85rem;">Mã: LK-XXX</p>
+                    <p style="margin: 5px 0 0 0; font-size: 1.1rem; color: var(--danger); font-weight: bold;" id="consultPrice">0 đ</p>
+                    <p id="consultStockStatus" style="margin: 5px 0 0 0; font-size: 0.9rem;"></p>
+                </div>
+                <div class="form-group">
+                    <label>Mẫu tin nhắn/kịch bản tư vấn nhanh:</label>
+                    <textarea id="consultScript" rows="4" readonly style="background: #fff;"></textarea>
+                </div>
+                <button type="button" class="btn-action primary" onclick="copyConsultScript()"><i class="fas fa-copy"></i> Sao chép tin nhắn tư vấn</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeConsultModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <!-- App Scripts -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/auth.js"></script>
+
+    <script>
+        let allParts = [];
+
+        async function initPage() {
+            const { user, userData } = await checkAdminAuth('../index.html');
+            document.getElementById('adminName').textContent = userData.fullName || user.email;
+            document.getElementById('adminAvatar').textContent = (userData.fullName || 'S').charAt(0).toUpperCase();
+            document.getElementById('adminRole').innerHTML = getRoleBadge(userData.role);
+            generateSidebar(userData.role, 'sale-workspace');
+
+            loadInventory();
+        }
+
+        async function loadInventory() {
+            try {
+                document.getElementById('invLoading').style.display = 'block';
+                const snapshot = await db.collection('inventory').orderBy('name', 'asc').get();
+                allParts = [];
+                snapshot.forEach(doc => {
+                    allParts.push({ id: doc.id, ...doc.data() });
+                });
+
+                document.getElementById('totalItemsBadge').textContent = `${allParts.length} mặt hàng trong kho`;
+                filterParts();
+            } catch (err) {
+                console.error('Lỗi tải kho linh kiện:', err);
+                showToast('Lỗi tải kho: ' + err.message, 'error');
+                document.getElementById('invLoading').style.display = 'none';
+            }
+        }
+
+        function filterParts() {
+            const kw = document.getElementById('partSearch').value.toLowerCase().trim();
+            const cat = document.getElementById('partCategory').value;
+            const stock = document.getElementById('stockFilter').value;
+
+            const filtered = allParts.filter(p => {
+                const matchKw = (p.name && p.name.toLowerCase().includes(kw)) ||
+                                (p.partCode && p.partCode.toLowerCase().includes(kw));
+                const matchCat = (cat === 'all') || (p.category === cat);
+                let matchStock = true;
+                if (stock === 'in_stock') {
+                    matchStock = Number(p.quantity || 0) > 0;
+                } else if (stock === 'out_stock') {
+                    matchStock = Number(p.quantity || 0) <= Number(p.minQuantity || 2);
+                }
+                return matchKw && matchCat && matchStock;
+            });
+
+            renderPartsTable(filtered);
+        }
+
+        function renderPartsTable(list) {
+            document.getElementById('invLoading').style.display = 'none';
+            const table = document.getElementById('partsTable');
+            const tbody = document.getElementById('partsBody');
+            const empty = document.getElementById('partsEmpty');
+
+            if (list.length === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            table.style.display = 'table';
+            tbody.innerHTML = '';
+
+            const catMap = {
+                'ram': 'RAM', 'ssd': 'Ổ cứng SSD', 'screen': 'Màn hình',
+                'battery': 'Pin Laptop', 'keyboard': 'Bàn phím', 'mainboard': 'Mainboard', 'other': 'Khác'
+            };
+
+            list.forEach(p => {
+                const qty = Number(p.quantity || 0);
+                const isOutOfStock = qty <= 0;
+                const isLow = qty <= Number(p.minQuantity || 2);
+
+                let badgeHtml = '';
+                if (isOutOfStock) {
+                    badgeHtml = '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Hết hàng</span>';
+                } else if (isLow) {
+                    badgeHtml = '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Sắp hết (chỉ còn ' + qty + ')</span>';
+                } else {
+                    badgeHtml = '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Sẵn sàng bán (' + qty + ')</span>';
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.partCode || '---'}</strong></td>
+                        <td><strong>${p.name}</strong></td>
+                        <td><span class="badge badge-info">${catMap[p.category] || p.category}</span></td>
+                        <td>
+                            <strong style="font-size: 1.1rem; color: ${isOutOfStock ? '#d32f2f' : '#2e7d32'};">
+                                ${qty}
+                            </strong>
+                        </td>
+                        <td><strong style="color: var(--danger); font-size: 1.05rem;">${formatVND(p.sellPrice || 0)}</strong></td>
+                        <td>${badgeHtml}</td>
+                        <td>
+                            <button class="btn-action primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openConsult('${p.id}')">
+                                <i class="fas fa-comments"></i> Báo giá
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openConsult(partId) {
+            const p = allParts.find(item => item.id === partId);
+            if (!p) return;
+
+            const qty = Number(p.quantity || 0);
+            document.getElementById('consultPartName').textContent = p.name;
+            document.getElementById('consultPartCode').textContent = `Mã linh kiện: ${p.partCode || 'N/A'}`;
+            document.getElementById('consultPrice').textContent = `Giá thay thế/bán: ${formatVND(p.sellPrice || 0)}`;
+
+            const stockText = qty > 0 ? `Hiện tại trong kho đang sẵn ${qty} cái, có thể thay thế ngay trong ngày!` : `Linh kiện hiện tạm hết hàng trong kho, cần đặt trước từ 1-2 ngày.`;
+            document.getElementById('consultStockStatus').innerHTML = `<strong>Tình trạng kho:</strong> ${stockText}`;
+
+            const script = `Dạ chào anh/chị, linh kiện "${p.name}" (Mã: ${p.partCode || 'N/A'}) tại TechCare Pro hiện có giá là ${formatVND(p.sellPrice || 0)} (đã bao gồm công kiểm tra và bảo hành). ${stockText}`;
+            document.getElementById('consultScript').value = script;
+
+            document.getElementById('consultModal').classList.add('active');
+        }
+
+        function closeConsultModal() {
+            document.getElementById('consultModal').classList.remove('active');
+        }
+
+        function copyConsultScript() {
+            const script = document.getElementById('consultScript');
+            script.select();
+            document.execCommand('copy');
+            showToast('Đã sao chép nội dung tư vấn vào Clipboard!', 'success');
+        }
+
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
