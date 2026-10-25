@@ -19,20 +19,14 @@
             <small>Cổng Quản Trị Hệ Thống</small>
         </div>
         <div class="sidebar-nav">
-            <a href="dashboard.html"><span class="icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard</a>
-            <a href="tickets.html"><span class="icon"><i class="fas fa-ticket-alt"></i></span> Quản lý Phiếu SC</a>
-            <a href="services.html"><span class="icon"><i class="fas fa-tools"></i></span> Danh mục Dịch vụ</a>
-            <a href="employees.html" class="active"><span class="icon"><i class="fas fa-users-cog"></i></span> Quản lý Nhân sự</a>
-            <a href="schedules.html"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Lịch trực KTV</a>
-            <a href="inventory.html"><span class="icon"><i class="fas fa-boxes"></i></span> Quản lý Kho vật tư</a>
-            <a href="reports.html"><span class="icon"><i class="fas fa-chart-line"></i></span> Thống kê & Báo cáo</a>
+            <!-- Tự động sinh danh mục theo vai trò người dùng -->
         </div>
         <div class="sidebar-footer">
             <div class="admin-info">
-                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div class="admin-avatar" id="adminAvatar">...</div>
                 <div>
-                    <div class="admin-name" id="adminName">Admin User</div>
-                    <div class="admin-role" id="adminRole">Quản trị viên</div>
+                    <div class="admin-name" id="adminName">Đang tải...</div>
+                    <div class="admin-role" id="adminRole">...</div>
                 </div>
             </div>
             <button class="btn-logout" onclick="handleSignOut('../index.html')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
@@ -52,6 +46,7 @@
                     <i class="fas fa-file-excel"></i> Import Excel KTV
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelImport(event)">
                 </label>
+                <button class="btn-action success" onclick="seedSampleAccounts()"><i class="fas fa-magic"></i> Khởi tạo tài khoản mẫu (KTV, Sale, Kho)</button>
                 <button class="btn-action primary" onclick="openEmployeeModal()"><i class="fas fa-user-plus"></i> Thêm nhân viên</button>
             </div>
         </div>
@@ -173,10 +168,11 @@
     <script src="../js/auth.js"></script>
 
     <script>
+        applyCachedUserInfo('employees');
         let allEmployees = [];
 
         async function initPage() {
-            const { user, userData } = await checkAdminAuth('../index.html');
+            const { user, userData } = await checkAdminAuth(["admin"], 'employees', '../index.html');
             document.getElementById('adminName').textContent = userData.fullName || user.email;
             document.getElementById('adminAvatar').textContent = (userData.fullName || 'A').charAt(0).toUpperCase();
             document.getElementById('adminRole').innerHTML = getRoleBadge(userData.role);
@@ -477,6 +473,38 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "DanhSachNhanVien");
             XLSX.writeFile(wb, "Mau_Import_NhanSu_KTV.xlsx");
+        }
+
+        
+        // Tự động khởi tạo tài khoản mẫu KTV, Sale, Kho để test nhanh
+        async function seedSampleAccounts() {
+            if (!confirm('Khởi tạo nhanh 3 tài khoản nhân sự mẫu (KTV, Sale/Tiếp nhận, Kho) với mật khẩu mặc định "123456"?')) return;
+
+            const sampleUsers = [
+                { fullName: 'Trần Văn Kỹ Thuật (KTV)', email: 'ktv@techcare.vn', phone: '0981122334', role: 'ktv' },
+                { fullName: 'Nguyễn Thị Tiếp Nhận (Sale)', email: 'sale@techcare.vn', phone: '0912233445', role: 'nhanvien_tiepnhan' },
+                { fullName: 'Lê Văn Kho (Thủ Kho)', email: 'kho@techcare.vn', phone: '0903344556', role: 'quanlykho' }
+            ];
+
+            let count = 0;
+            showToast('Đang khởi tạo tài khoản mẫu...', 'info');
+
+            for (const u of sampleUsers) {
+                try {
+                    await createEmployeeAccount(u.email, '123456', {
+                        fullName: u.fullName,
+                        phone: u.phone,
+                        role: u.role,
+                        status: 'active'
+                    });
+                    count++;
+                } catch (e) {
+                    console.warn('Seed notice for ' + u.email + ':', e.message);
+                }
+            }
+
+            showToast('Đã khởi tạo/cập nhật thành công các tài khoản mẫu! Mật khẩu: 123456', 'success');
+            loadEmployees();
         }
 
         window.addEventListener('DOMContentLoaded', initPage);

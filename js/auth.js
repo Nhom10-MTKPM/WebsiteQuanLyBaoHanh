@@ -3,8 +3,31 @@
 // ==========================================
 
 /**
+ * Lấy URL trang chủ tương ứng cho từng vai trò
+ */
+function getHomeUrlForRole(role, isFromAdminFolder = false) {
+    const prefix = isFromAdminFolder ? '' : 'admin/';
+    const userPrefix = isFromAdminFolder ? '../user/' : 'user/';
+    switch (role) {
+        case 'admin':
+            return `${prefix}dashboard.html`;
+        case 'ktv':
+            return `${prefix}ktv-workspace.html`;
+        case 'nhanvien_tiepnhan':
+            return `${prefix}sale-workspace.html`;
+        case 'quanlykho':
+            return `${prefix}inventory.html`;
+        case 'thungan':
+            return `${prefix}tickets.html`;
+        case 'khachhang':
+        default:
+            return `${userPrefix}dashboard.html`;
+    }
+}
+
+/**
  * Handle Login with Email and Password
- * Automatically routes admin/staff to admin/dashboard.html and customer to user/dashboard.html
+ * Tự động phân luồng chính xác tới trang riêng của từng vai trò
  */
 async function loginUser(email, password) {
     try {
@@ -30,26 +53,30 @@ async function loginUser(email, password) {
         let userDoc = await db.collection('users').doc(user.uid).get();
 
         if (!userDoc.exists) {
-            // If user doc doesn't exist, check if admin or fallback
-            if (email.toLowerCase().includes('admin')) {
-                await db.collection('users').doc(user.uid).set({
+            // Chỉ duy nhất email master admin mới được cấp role admin nếu doc chưa tồn tại
+            if (email.toLowerCase() === 'admin@techcare.vn') {
+                const adminData = {
                     email: user.email,
                     fullName: 'Quản trị viên Hệ thống',
                     role: 'admin',
                     status: 'active',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+                await db.collection('users').doc(user.uid).set(adminData);
+                sessionStorage.setItem('techcare_user', JSON.stringify({ ...adminData, uid: user.uid }));
                 window.location.href = 'admin/dashboard.html';
                 return;
             } else {
-                // Default to customer
-                await db.collection('users').doc(user.uid).set({
+                // Tất cả các tài khoản khác tự đăng ký mặc định là khách hàng
+                const customerData = {
                     email: user.email,
                     fullName: user.displayName || user.email.split('@')[0],
                     role: 'khachhang',
                     status: 'active',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+                await db.collection('users').doc(user.uid).set(customerData);
+                sessionStorage.setItem('techcare_user', JSON.stringify({ ...customerData, uid: user.uid }));
                 window.location.href = 'user/dashboard.html';
                 return;
             }
@@ -60,18 +87,17 @@ async function loginUser(email, password) {
         // Check if account is locked
         if (userData.status === 'locked' || userData.status === 'inactive') {
             await auth.signOut();
+            sessionStorage.removeItem('techcare_user');
             throw new Error('Tài khoản của bạn đã bị khóa hoặc tạm ngưng hoạt động. Vui lòng liên hệ Admin!');
         }
 
         const role = userData.role || 'khachhang';
 
-        // Role-based routing
-        const adminRoles = ['admin', 'nhanvien_tiepnhan', 'ktv', 'thungan', 'quanlykho'];
-        if (adminRoles.includes(role)) {
-            window.location.href = 'admin/dashboard.html';
-        } else {
-            window.location.href = 'user/dashboard.html';
-        }
+        // Lưu thông tin người dùng vào session để nạp tức thì tránh chớp giao diện
+        sessionStorage.setItem('techcare_user', JSON.stringify({ ...userData, uid: user.uid }));
+
+        // Role-based routing: Mỗi role vào thẳng trang riêng của mình
+        window.location.href = getHomeUrlForRole(role, false);
     } catch (error) {
         console.error('Login error:', error);
         let msg = error.message;
@@ -88,7 +114,7 @@ async function loginUser(email, password) {
 
 /**
  * Handle Registration (Customers ONLY - role is always 'khachhang')
- * Customers CANNOT register as admin or staff
+ * Khách hàng CHỈ CÓ THỂ đăng ký tài khoản Khách hàng, không thể tự ý đăng ký làm Admin/Nhân viên
  */
 async function registerCustomer(fullName, email, phone, password) {
     try {
@@ -100,23 +126,28 @@ async function registerCustomer(fullName, email, phone, password) {
             displayName: fullName
         });
 
-        // Send Email Verification (US.07)
+        // Send Email Verification
         try {
             await user.sendEmailVerification();
         } catch (evErr) {
             console.warn('Email verification send notice:', evErr);
         }
 
-        // Save into Firestore 'users' collection with role 'khachhang'
-        await db.collection('users').doc(user.uid).set({
+        const customerData = {
             fullName: fullName.trim(),
             email: email.trim().toLowerCase(),
             phone: phone ? phone.trim() : '',
-            role: 'khachhang', // KHÁCH HÀNG LUÔN LÀ KHACHHANG, KHÔNG THỂ LÀM ADMIN
+            role: 'khachhang', // KHÁCH HÀNG LUÔN LÀ KHACHHANG
             status: 'active',
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+
+        // Save into Firestore 'users' collection with role 'khachhang'
+        await db.collection('users').doc(user.uid).set(customerData);
+
+        // Save into sessionStorage
+        sessionStorage.setItem('techcare_user', JSON.stringify({ ...customerData, uid: user.uid }));
 
         // Create welcome notification
         await db.collection('notifications').add({
@@ -180,7 +211,7 @@ async function initDefaultAdminAccount(adminEmail = 'admin@techcare.vn', adminPa
 }
 
 /**
- * Send password reset email (US.06)
+ * Send password reset email
  */
 async function resetPassword(email) {
     try {
@@ -204,12 +235,14 @@ function checkCustomerAuth(redirectUrl = '../index.html') {
     return new Promise((resolve) => {
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
+                sessionStorage.removeItem('techcare_user');
                 window.location.href = redirectUrl;
                 return;
             }
             try {
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (!userDoc.exists) {
+                    sessionStorage.removeItem('techcare_user');
                     window.location.href = redirectUrl;
                     return;
                 }
@@ -217,16 +250,19 @@ function checkCustomerAuth(redirectUrl = '../index.html') {
                 if (userData.status === 'locked' || userData.status === 'inactive') {
                     alert('Tài khoản của bạn đã bị khóa!');
                     await auth.signOut();
+                    sessionStorage.removeItem('techcare_user');
                     window.location.href = redirectUrl;
                     return;
                 }
-                // If user is admin/staff trying to access user page, redirect to admin
+                // If user is admin/staff trying to access user page, redirect to their workspace
                 const adminRoles = ['admin', 'nhanvien_tiepnhan', 'ktv', 'thungan', 'quanlykho'];
                 if (adminRoles.includes(userData.role)) {
-                    window.location.href = '../admin/dashboard.html';
+                    window.location.href = getHomeUrlForRole(userData.role, false);
                     return;
                 }
-                resolve({ user, userData });
+                const fullUser = { ...userData, uid: user.uid };
+                sessionStorage.setItem('techcare_user', JSON.stringify(fullUser));
+                resolve({ user, userData: fullUser });
             } catch (err) {
                 console.error('Customer auth check error:', err);
                 window.location.href = redirectUrl;
@@ -236,38 +272,115 @@ function checkCustomerAuth(redirectUrl = '../index.html') {
 }
 
 /**
- * Check Authentication for Admin/Staff Pages
+ * Cập nhật hiển thị thông tin nhân viên và sidebar
  */
-function checkAdminAuth(redirectUrl = '../index.html') {
+function updateUserDisplay(userData, activePage) {
+    if (!userData) return;
+
+    // Cập nhật tên
+    const nameEl = document.getElementById('adminName');
+    if (nameEl) nameEl.textContent = userData.fullName || userData.email || 'Người dùng';
+
+    // Cập nhật avatar
+    const avatarEl = document.getElementById('adminAvatar');
+    if (avatarEl) {
+        const initial = (userData.fullName || userData.email || 'U').charAt(0).toUpperCase();
+        avatarEl.textContent = initial;
+    }
+
+    // Cập nhật vai trò badge
+    const roleEl = document.getElementById('adminRole');
+    if (roleEl) roleEl.innerHTML = getRoleBadge(userData.role);
+
+    // Cập nhật tiêu đề Portal theo vai trò
+    const brandSmall = document.querySelector('.sidebar-brand small');
+    if (brandSmall) {
+        const portalTitles = {
+            'admin': 'Cổng Quản Trị Hệ Thống',
+            'ktv': 'Cổng Kỹ Thuật Viên (KTV)',
+            'nhanvien_tiepnhan': 'Cổng Bán Hàng & Tiếp Nhận',
+            'quanlykho': 'Cổng Quản Lý Kho Vật Tư',
+            'thungan': 'Cổng Thu Ngân & Kế Toán'
+        };
+        brandSmall.textContent = portalTitles[userData.role] || 'Cổng Nghiệp Vụ';
+    }
+
+    // Sinh lại sidebar theo đúng vai trò
+    if (activePage) {
+        generateSidebar(userData.role, activePage);
+    }
+}
+
+/**
+ * Nạp thông tin người dùng từ sessionStorage ngay lập tức (Zero-Flash)
+ * Giúp giao diện không bị giật hoặc nhấp nháy chữ Admin khi chuyển trang
+ */
+function applyCachedUserInfo(activePage) {
+    try {
+        const cached = sessionStorage.getItem('techcare_user');
+        if (cached) {
+            const userData = JSON.parse(cached);
+            updateUserDisplay(userData, activePage);
+        }
+    } catch (e) {
+        console.warn('Lỗi đọc cached user:', e);
+    }
+}
+
+/**
+ * Check Authentication & Page Access for Admin/Staff Pages
+ * @param {Array} allowedRoles Danh sách vai trò được phép truy cập trang này (nếu rỗng thì tất cả staff)
+ * @param {string} activePage Tên trang để highlight menu
+ * @param {string} redirectUrl URL chuyển hướng nếu chưa đăng nhập
+ */
+function checkAdminAuth(allowedRoles = [], activePage = '', redirectUrl = '../index.html') {
     return new Promise((resolve) => {
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
+                sessionStorage.removeItem('techcare_user');
                 window.location.href = redirectUrl;
                 return;
             }
             try {
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (!userDoc.exists) {
+                    sessionStorage.removeItem('techcare_user');
                     window.location.href = redirectUrl;
                     return;
                 }
                 const userData = userDoc.data();
                 if (userData.status === 'locked' || userData.status === 'inactive') {
-                    alert('Tài khoản của bạn đã bị khóa!');
+                    alert('Tài khoản của bạn đã bị khóa hoặc tạm ngưng hoạt động!');
                     await auth.signOut();
+                    sessionStorage.removeItem('techcare_user');
                     window.location.href = redirectUrl;
                     return;
                 }
 
-                const adminRoles = ['admin', 'nhanvien_tiepnhan', 'ktv', 'thungan', 'quanlykho'];
-                if (!adminRoles.includes(userData.role)) {
-                    // It's a regular customer trying to access admin
-                    alert('Bạn không có quyền truy cập trang quản trị!');
+                // Nếu là khách hàng cố vào trang nghiệp vụ
+                if (userData.role === 'khachhang') {
+                    alert('Bạn không có quyền truy cập trang quản trị/nghiệp vụ!');
                     window.location.href = '../user/dashboard.html';
                     return;
                 }
 
-                resolve({ user, userData });
+                const fullUser = { ...userData, uid: user.uid };
+                sessionStorage.setItem('techcare_user', JSON.stringify(fullUser));
+
+                // Kiểm tra phân quyền truy cập theo từng trang:
+                // Nếu vai trò không phải Admin và trang đó không cho phép vai trò này -> Chuyển về trang riêng của họ
+                if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
+                    if (userData.role !== 'admin' && !allowedRoles.includes(userData.role)) {
+                        console.warn(`Vai trò ${userData.role} không có quyền vào trang ${activePage}. Đang chuyển hướng về trang nghiệp vụ tương ứng...`);
+                        window.location.href = getHomeUrlForRole(userData.role, true);
+                        return;
+                    }
+                }
+
+                // Cập nhật giao diện và menu
+                updateUserDisplay(fullUser, activePage);
+
+                resolve({ user, userData: fullUser });
             } catch (err) {
                 console.error('Admin auth check error:', err);
                 window.location.href = redirectUrl;
@@ -282,6 +395,7 @@ function checkAdminAuth(redirectUrl = '../index.html') {
 async function handleSignOut(redirectUrl = '../index.html') {
     if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
         try {
+            sessionStorage.removeItem('techcare_user');
             await auth.signOut();
             window.location.href = redirectUrl;
         } catch (err) {
@@ -395,19 +509,15 @@ function getRoleBadge(role) {
  * Creates both Firebase Auth account AND Firestore user document.
  */
 async function createEmployeeAccount(email, password, userData) {
-    // Create a temporary secondary Firebase app
     const secondaryApp = firebase.initializeApp(firebaseConfig, 'SecondaryApp_' + Date.now());
     const secondaryAuth = secondaryApp.auth();
 
     try {
-        // Create user in Firebase Auth via secondary app
         const userCredential = await secondaryAuth.createUserWithEmailAndPassword(email, password);
         const uid = userCredential.user.uid;
 
-        // Sign out the secondary app immediately
         await secondaryAuth.signOut();
 
-        // Save user profile to Firestore using the real UID from Auth
         await db.collection('users').doc(uid).set({
             fullName: userData.fullName,
             email: email.trim().toLowerCase(),
@@ -423,41 +533,52 @@ async function createEmployeeAccount(email, password, userData) {
         console.error('createEmployeeAccount error:', err);
         throw err;
     } finally {
-        // Always clean up the secondary app
         try { await secondaryApp.delete(); } catch(e) {}
     }
 }
 
 /**
  * Generate role-based sidebar navigation
- * Each role only sees menu items relevant to their job
+ * Mỗi vai trò có danh mục và trang làm việc chuyên biệt, tránh nhầm lẫn hoặc nhảy sang trang khác
  */
 function generateSidebar(role, activePage) {
-    // Define all possible menu items
     const allMenuItems = [
-        { id: 'dashboard', href: 'dashboard.html', icon: 'fas fa-tachometer-alt', label: 'Dashboard', roles: ['admin', 'nhanvien_tiepnhan', 'ktv', 'thungan', 'quanlykho'] },
+        // Quản trị viên
+        { id: 'dashboard', href: 'dashboard.html', icon: 'fas fa-tachometer-alt', label: 'Dashboard Quản trị', roles: ['admin'] },
+        
+        // Tiếp nhận máy & Phiếu SC (Admin, Sale, Thu ngân)
         { id: 'tickets', href: 'tickets.html', icon: 'fas fa-ticket-alt', label: 'Quản lý Phiếu SC', roles: ['admin', 'nhanvien_tiepnhan', 'thungan'] },
+
+        // Kỹ thuật viên (KTV)
         { id: 'ktv-workspace', href: 'ktv-workspace.html', icon: 'fas fa-tools', label: 'Phiếu SC của tôi', roles: ['ktv'] },
+        { id: 'warehouse', href: 'warehouse.html', icon: 'fas fa-warehouse', label: 'Kho & Đặt linh kiện', roles: ['ktv'] },
+
+        // Sale / CSKH / Tiếp nhận
         { id: 'sale-workspace', href: 'sale-workspace.html', icon: 'fas fa-store', label: 'Tra cứu Kho & Bán hàng', roles: ['nhanvien_tiepnhan'] },
+
+        // Dịch vụ sửa chữa (Admin & Sale)
         { id: 'services', href: 'services.html', icon: 'fas fa-cogs', label: 'Danh mục Dịch vụ', roles: ['admin', 'nhanvien_tiepnhan'] },
+
+        // Nhân sự & Lịch trực
         { id: 'employees', href: 'employees.html', icon: 'fas fa-users-cog', label: 'Quản lý Nhân sự', roles: ['admin'] },
-        { id: 'schedules', href: 'schedules.html', icon: 'fas fa-calendar-alt', label: 'Lịch trực KTV', roles: ['admin', 'ktv'] },
+        { id: 'schedules', href: 'schedules.html', icon: 'fas fa-calendar-alt', label: role === 'ktv' ? 'Lịch trực của tôi' : 'Lịch trực KTV', roles: ['admin', 'ktv'] },
+
+        // Quản lý Kho vật tư (Admin & Quản lý kho)
         { id: 'inventory', href: 'inventory.html', icon: 'fas fa-boxes', label: 'Quản lý Kho vật tư', roles: ['admin', 'quanlykho'] },
-        { id: 'warehouse', href: 'warehouse.html', icon: 'fas fa-warehouse', label: 'Kho & Yêu cầu LK', roles: ['ktv'] },
-        { id: 'reports', href: 'reports.html', icon: 'fas fa-chart-line', label: 'Thống kê & Báo cáo', roles: ['admin', 'quanlykho', 'thungan'] }
+
+        // Báo cáo & Thống kê
+        { id: 'reports', href: 'reports.html', icon: 'fas fa-chart-line', label: role === 'quanlykho' ? 'Thống kê Kho vật tư' : 'Thống kê & Báo cáo', roles: ['admin', 'quanlykho', 'thungan'] }
     ];
 
-    // Filter items by role
+    // Lọc menu theo vai trò
     const visibleItems = allMenuItems.filter(item => item.roles.includes(role));
 
-    // Build sidebar HTML
     let navHTML = '';
     visibleItems.forEach(item => {
         const isActive = item.id === activePage ? ' class="active"' : '';
         navHTML += `<a href="${item.href}"${isActive}><span class="icon"><i class="${item.icon}"></i></span> ${item.label}</a>\n`;
     });
 
-    // Apply to sidebar
     const sidebarNav = document.querySelector('.sidebar-nav');
     if (sidebarNav) {
         sidebarNav.innerHTML = navHTML;

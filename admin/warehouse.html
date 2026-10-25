@@ -17,14 +17,14 @@
             <small>Cổng Quản Trị Hệ Thống</small>
         </div>
         <div class="sidebar-nav">
-            <!-- Tự động sinh theo quyền thông qua generateSidebar -->
+            <!-- Tự động sinh danh mục theo vai trò người dùng -->
         </div>
         <div class="sidebar-footer">
             <div class="admin-info">
-                <div class="admin-avatar" id="adminAvatar">K</div>
+                <div class="admin-avatar" id="adminAvatar">...</div>
                 <div>
-                    <div class="admin-name" id="adminName">Kỹ thuật viên</div>
-                    <div class="admin-role" id="adminRole">Kỹ thuật viên (KTV)</div>
+                    <div class="admin-name" id="adminName">Đang tải...</div>
+                    <div class="admin-role" id="adminRole">...</div>
                 </div>
             </div>
             <button class="btn-logout" onclick="handleSignOut('../index.html')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
@@ -169,11 +169,12 @@
     <script src="../js/auth.js"></script>
 
     <script>
+        applyCachedUserInfo('warehouse');
         let currentUser = null;
         let allParts = [];
 
         async function initPage() {
-            const { user, userData } = await checkAdminAuth('../index.html');
+            const { user, userData } = await checkAdminAuth(["admin","ktv"], 'warehouse', '../index.html');
             currentUser = { ...userData, uid: user.uid };
             document.getElementById('adminName').textContent = userData.fullName || user.email;
             document.getElementById('adminAvatar').textContent = (userData.fullName || 'K').charAt(0).toUpperCase();

@@ -17,14 +17,14 @@
             <small>Cổng Quản Trị Hệ Thống</small>
         </div>
         <div class="sidebar-nav">
-            <!-- Tự động sinh theo quyền thông qua generateSidebar -->
+            <!-- Tự động sinh danh mục theo vai trò người dùng -->
         </div>
         <div class="sidebar-footer">
             <div class="admin-info">
-                <div class="admin-avatar" id="adminAvatar">S</div>
+                <div class="admin-avatar" id="adminAvatar">...</div>
                 <div>
-                    <div class="admin-name" id="adminName">Sale / Tiếp nhận</div>
-                    <div class="admin-role" id="adminRole">NV Tiếp nhận / CSKH</div>
+                    <div class="admin-name" id="adminName">Đang tải...</div>
+                    <div class="admin-role" id="adminRole">...</div>
                 </div>
             </div>
             <button class="btn-logout" onclick="handleSignOut('../index.html')"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button>
@@ -133,10 +133,11 @@
     <script src="../js/auth.js"></script>
 
     <script>
+        applyCachedUserInfo('sale-workspace');
         let allParts = [];
 
         async function initPage() {
-            const { user, userData } = await checkAdminAuth('../index.html');
+            const { user, userData } = await checkAdminAuth(["admin","nhanvien_tiepnhan"], 'sale-workspace', '../index.html');
             document.getElementById('adminName').textContent = userData.fullName || user.email;
             document.getElementById('adminAvatar').textContent = (userData.fullName || 'S').charAt(0).toUpperCase();
             document.getElementById('adminRole').innerHTML = getRoleBadge(userData.role);

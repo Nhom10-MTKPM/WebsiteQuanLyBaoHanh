@@ -19,7 +19,7 @@
         <form id="loginForm" class="auth-form" onsubmit="handleLoginSubmit(event)">
             <div class="form-group">
                 <label for="loginEmail"><i class="fas fa-envelope"></i> Email đăng nhập</label>
-                <input type="email" id="loginEmail" placeholder="vd: admin@techcare.vn hoặc khachhang@gmail.com" required autocomplete="email">
+                <input type="email" id="loginEmail" placeholder="Nhập email của bạn (vd: email@gmail.com)" required autocomplete="email">
             </div>
 
             <div class="form-group">
@@ -87,19 +87,15 @@
             }
         }
 
-        // Auto check if already logged in, redirect appropriately
+        // Auto check if already logged in, redirect appropriately to role landing page
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 try {
                     const doc = await db.collection('users').doc(user.uid).get();
                     if (doc.exists) {
                         const role = doc.data().role || 'khachhang';
-                        const adminRoles = ['admin', 'nhanvien_tiepnhan', 'ktv', 'thungan', 'quanlykho'];
-                        if (adminRoles.includes(role)) {
-                            window.location.href = 'admin/dashboard.html';
-                        } else {
-                            window.location.href = 'user/dashboard.html';
-                        }
+                        sessionStorage.setItem('techcare_user', JSON.stringify({ ...doc.data(), uid: user.uid }));
+                        window.location.href = getHomeUrlForRole(role, false);
                     }
                 } catch(e) {
                     console.log('Session check:', e);
