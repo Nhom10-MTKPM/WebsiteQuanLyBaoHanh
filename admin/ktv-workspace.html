@@ -39,7 +39,7 @@
                 <p>Tiếp nhận máy được giao, kiểm tra tồn kho linh kiện thay thế, cập nhật tiến độ và báo giá</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="warehouse.html" class="btn-action warning"><i class="fas fa-boxes"></i> Tra cứu Kho & Gửi Yêu Cầu Linh Kiện</a>
+                <a href="warehouse.html" class="btn-action warning"><i class="fas fa-boxes"></i> Tra cứu Kho &amp; Gửi Yêu Cầu Linh Kiện</a>
             </div>
         </div>
 
@@ -72,7 +72,7 @@
                             <th>Thiết Bị</th>
                             <th>Hiện Trạng Lỗi</th>
                             <th>Trạng Thái</th>
-                            <th>Báo Giá & Linh Kiện</th>
+                            <th>Báo Giá &amp; Linh Kiện</th>
                             <th>Thao Tác</th>
                         </tr>
                     </thead>
@@ -169,7 +169,7 @@
                                 <option value="cho_bao_gia">Chờ khách duyệt báo giá</option>
                                 <option value="dang_sua">Đang tiến hành sửa chữa</option>
                                 <option value="cho_linh_kien">Chờ đặt linh kiện từ kho</option>
-                                <option value="hoan_thanh">Đã sửa xong & Kiểm tra hoàn tất</option>
+                                <option value="hoan_thanh">Đã sửa xong &amp; Kiểm tra hoàn tất</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -261,10 +261,9 @@
 
                 snapshot.forEach(doc => {
                     const t = { id: doc.id, ...doc.data() };
-                    // Lọc phiếu được giao cho KTV hiện tại hoặc chưa phân công
-                    const isAssignedToMe = (t.assignedKtvId === currentKtvUser.uid) || 
+                    const isAssignedToMe = (t.assignedKtvId === currentKtvUser.uid) ||
                                            (t.assignedKtvName && t.assignedKtvName.toLowerCase() === (currentKtvUser.fullName || '').toLowerCase()) ||
-                                           (currentKtvUser.role === 'admin'); // Admin xem được hết
+                                           (currentKtvUser.role === 'admin');
                     if (isAssignedToMe) {
                         myTickets.push(t);
                     }
@@ -292,9 +291,7 @@
                 const matchKw = (t.ticketId && t.ticketId.toLowerCase().includes(kw)) ||
                                 (t.customerName && t.customerName.toLowerCase().includes(kw)) ||
                                 (t.deviceModel && t.deviceModel.toLowerCase().includes(kw));
-
                 const matchStatus = (currentFilterStatus === 'all') || (t.status === currentFilterStatus);
-
                 return matchKw && matchStatus;
             });
 
@@ -329,7 +326,7 @@
                         <td><strong style="color: var(--danger);">${total}</strong></td>
                         <td>
                             <button class="btn-action primary" style="padding: 5px 12px; font-size: 0.85rem;" onclick="openKtvModal('${t.id}')">
-                                <i class="fas fa-wrench"></i> Xử lý & Báo giá
+                                <i class="fas fa-wrench"></i> Xử lý &amp; Báo giá
                             </button>
                         </td>
                     </tr>
@@ -435,10 +432,34 @@
             let total = 0;
             currentQuoteItems.forEach(q => total += (q.qty * q.price));
 
+            // === XUẤT/TRỪ KHO THEO TICKET ===
+            // Xác định delta linh kiện so với lần lưu trước để tự động trừ/hoàn kho
+            const oldQuotation = (currentActiveTicket && Array.isArray(currentActiveTicket.quotation))
+                ? currentActiveTicket.quotation : [];
+
+            const exportDelta = [];
+            // Tính linh kiện tăng thêm hoặc giảm -> xuất/hoàn kho
+            currentQuoteItems.forEach(newItem => {
+                const oldItem = oldQuotation.find(o => o.partId === newItem.partId);
+                const oldQty = oldItem ? (oldItem.qty || 0) : 0;
+                const diff = (newItem.qty || 0) - oldQty;
+                if (diff !== 0) {
+                    exportDelta.push({ ...newItem, exportQty: diff });
+                }
+            });
+            // Tính linh kiện bị xóa khỏi phiếu -> hoàn trả toàn bộ vào kho
+            oldQuotation.forEach(oldItem => {
+                const stillExists = currentQuoteItems.find(n => n.partId === oldItem.partId);
+                if (!stillExists) {
+                    exportDelta.push({ ...oldItem, exportQty: -(oldItem.qty || 0) });
+                }
+            });
+
             try {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
 
+                // 1. Cập nhật ticket chính
                 await db.collection('tickets').doc(docId).update({
                     diagnosis,
                     quotation: currentQuoteItems,
@@ -450,7 +471,66 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showToast('✅ Đã cập nhật kết quả xử lý và linh kiện thành công!', 'success');
+                // 2. Tự động xuất/hoàn kho & ghi lịch sử stockMovements
+                const batch = db.batch();
+                const stockWarnings = [];
+
+                for (const delta of exportDelta) {
+                    if (!delta.partId || delta.exportQty === 0) continue;
+
+                    // Lấy dữ liệu tồn kho hiện tại từ inventoryList (bộ nhớ)
+                    const invItem = inventoryList.find(i => i.id === delta.partId);
+                    if (!invItem) continue;
+
+                    const currentQty = Number(invItem.quantity || 0);
+                    const newQty = currentQty - delta.exportQty; // exportQty âm = hoàn trả
+
+                    if (newQty < 0) {
+                        stockWarnings.push(`"${delta.name}" (kho còn ${currentQty}, cần xuất thêm ${delta.exportQty})`);
+                        continue;
+                    }
+
+                    // Cập nhật số lượng tồn kho trong Firestore
+                    const invRef = db.collection('inventory').doc(delta.partId);
+                    batch.update(invRef, {
+                        quantity: newQty,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    // Đồng bộ bộ nhớ để tránh race condition
+                    invItem.quantity = newQty;
+
+                    // Ghi lịch sử biến động kho (stockMovements)
+                    const movRef = db.collection('stockMovements').doc();
+                    const isReturn = delta.exportQty < 0;
+                    batch.set(movRef, {
+                        type: isReturn ? 'import' : 'export',
+                        partId: delta.partId,
+                        partName: delta.name,
+                        quantity: Math.abs(delta.exportQty),
+                        ticketId: currentActiveTicket.ticketId || docId,
+                        note: isReturn
+                            ? `Hoàn trả kho – KTV điều chỉnh phiếu ${currentActiveTicket.ticketId}`
+                            : `Xuất theo phiếu KTV: ${currentActiveTicket.ticketId}`,
+                        performedBy: currentKtvUser.fullName || 'KTV',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
+                await batch.commit();
+
+                // Đồng bộ snapshot cũ để delta lần sau tính đúng
+                if (currentActiveTicket) {
+                    currentActiveTicket.quotation = [...currentQuoteItems];
+                    currentActiveTicket.totalCost = total;
+                    currentActiveTicket.status = newStatus;
+                }
+
+                if (stockWarnings.length > 0) {
+                    showToast('⚠️ Lưu phiếu OK nhưng không đủ kho: ' + stockWarnings.join('; '), 'warning', 6000);
+                } else {
+                    showToast('✅ Đã cập nhật phiếu & tự động trừ kho theo Ticket!', 'success');
+                }
+
                 closeKtvModal();
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật phiếu';
