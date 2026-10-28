@@ -3,9 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Kho Vật Tư & Linh Kiện - TechCare Pro</title>
+    <title>Quản Lý Kho & Linh Kiện - TechCare Pro</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .stats-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+        .stat-card { flex: 1; min-width: 160px; background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(0,0,0,.07); display: flex; align-items: center; gap: 12px; }
+        .stat-card .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .stat-card .stat-val { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+        .stat-card .stat-lbl { font-size: 0.78rem; color: #777; margin-top: 2px; }
+        .si-blue { background: #e3f2fd; color: #1565c0; }
+        .si-green { background: #e8f5e9; color: #2e7d32; }
+        .si-orange { background: #fff3e0; color: #e65100; }
+        .si-red { background: #fce4ec; color: #c62828; }
+        .price-breakdown { font-size: 0.78rem; color: #888; }
+        .margin-badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+        .margin-good { background: #e8f5e9; color: #2e7d32; }
+        .margin-warn { background: #fff3e0; color: #e65100; }
+        .ticket-export-section { background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border: 1px solid #bbdefb; border-radius: 10px; padding: 16px; margin-bottom: 18px; }
+        .ticket-export-section h4 { margin: 0 0 10px; color: #1565c0; font-size: 0.95rem; }
+        .part-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin-top: 10px; }
+        .part-card { background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.07); border-left: 4px solid var(--primary, #1a73e8); transition: transform .15s; }
+        .part-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+        .part-card.low-stock-card { border-left-color: #e53935; }
+        .part-card-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+        .part-card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .part-card-prices { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.85rem; }
+        .price-box { background: #f8f9fa; border-radius: 6px; padding: 6px 10px; }
+        .price-box .lbl { font-size: 0.72rem; color: #888; }
+        .price-box .val { font-weight: 700; }
+        .price-box .val.green { color: #2e7d32; }
+        .price-box .val.red { color: #c62828; }
+        .part-card-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .part-card-actions button { flex: 1; font-size: 0.82rem; padding: 6px 0; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
+        .btn-edit-card { background: #e3f2fd; color: #1565c0; }
+        .btn-edit-card:hover { background: #bbdefb; }
+        .btn-del-card { background: #fce4ec; color: #c62828; }
+        .btn-del-card:hover { background: #f8bbd0; }
+        .btn-import-card { background: #e8f5e9; color: #2e7d32; }
+        .btn-import-card:hover { background: #c8e6c9; }
+        .btn-export-card { background: #fff3e0; color: #e65100; }
+        .btn-export-card:hover { background: #ffe0b2; }
+    </style>
 </head>
 <body>
     <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
@@ -35,28 +74,113 @@
     <main class="main-content">
         <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div>
-                <h1>📦 Quản Lý Kho Linh Kiện & Vật Tư </h1>
-                <p>Theo dõi tồn kho, cảnh báo vật tư sắp hết, tự động trừ kho khi xuất linh kiện sửa chữa</p>
+                <h1>📦 Quản Lý Kho & Linh Kiện (Inventory Core)</h1>
+                <p>Danh mục linh kiện · Giá vốn · Giá bán · Xuất/Trừ kho tự động theo Ticket KTV</p>
             </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn-action success" onclick="openStockModal('import')"><i class="fas fa-arrow-down"></i> Nhập kho</button>
-                <button class="btn-action warning" onclick="openStockModal('export')"><i class="fas fa-arrow-up"></i> Xuất kho</button>
-                <button class="btn-action primary" onclick="openPartModal()"><i class="fas fa-plus"></i> Thêm linh kiện mới</button>
+                <button class="btn-action warning" onclick="openStockModal('export')"><i class="fas fa-arrow-up"></i> Xuất kho thủ công</button>
+                <button class="btn-action primary" onclick="openPartModal()"><i class="fas fa-plus"></i> Thêm linh kiện</button>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card">
+                <div class="stat-icon si-blue"><i class="fas fa-boxes"></i></div>
+                <div>
+                    <div class="stat-val" id="statTotal">--</div>
+                    <div class="stat-lbl">Tổng loại linh kiện</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-green"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="stat-val" id="statOk">--</div>
+                    <div class="stat-lbl">Sẵn sàng xuất kho</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-red"><i class="fas fa-exclamation-triangle"></i></div>
+                <div>
+                    <div class="stat-val" id="statLow">--</div>
+                    <div class="stat-lbl">Sắp hết hàng</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-orange"><i class="fas fa-coins"></i></div>
+                <div>
+                    <div class="stat-val" id="statValue">--</div>
+                    <div class="stat-lbl">Tổng giá trị kho (giá vốn)</div>
+                </div>
             </div>
         </div>
 
         <!-- Filter Tabs -->
         <div class="filter-tabs">
-            <button class="tab active" onclick="switchTab('inventory', this)"><i class="fas fa-box-open"></i> Tồn kho hiện tại</button>
+            <button class="tab active" onclick="switchTab('catalog', this)"><i class="fas fa-th-large"></i> Danh mục linh kiện</button>
+            <button class="tab" onclick="switchTab('inventory', this)"><i class="fas fa-table"></i> Bảng tồn kho</button>
             <button class="tab" onclick="switchTab('lowStock', this)"><i class="fas fa-exclamation-triangle"></i> Cảnh báo sắp hết (<span id="lowStockCount">0</span>)</button>
             <button class="tab" onclick="switchTab('specialOrders', this)"><i class="fas fa-shipping-fast"></i> Yêu cầu linh kiện KTV</button>
             <button class="tab" onclick="switchTab('movements', this)"><i class="fas fa-history"></i> Lịch sử xuất/nhập kho</button>
         </div>
 
-        <!-- TAB 1: INVENTORY & TAB 2: LOW STOCK -->
-        <div id="tabInventoryContent">
+        <!-- TAB: DANH MỤC LINH KIỆN (Card view) -->
+        <div id="tabCatalogContent">
+            <!-- Xuất/Trừ kho theo Ticket -->
+            <div class="ticket-export-section">
+                <h4><i class="fas fa-ticket-alt"></i> Xuất/Trừ Kho Theo Mã Ticket</h4>
+                <p style="font-size:0.85rem; color:#444; margin:0 0 10px;">Nhập mã ticket để xuất linh kiện, hệ thống sẽ tự động trừ tồn kho và cộng vào tổng chi phí phiếu đó.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                    <div style="flex:1; min-width:180px;">
+                        <label style="font-size:0.83rem; font-weight:600;">Mã Ticket (*)</label>
+                        <input type="text" id="quickTicketId" placeholder="TK-20261028-001" style="width:100%; box-sizing:border-box; text-transform:uppercase;">
+                    </div>
+                    <div style="flex:2; min-width:200px;">
+                        <label style="font-size:0.83rem; font-weight:600;">Chọn linh kiện (*)</label>
+                        <select id="quickPartSelect" style="width:100%;" onchange="onQuickPartChange()"></select>
+                    </div>
+                    <div style="flex:0 0 90px;">
+                        <label style="font-size:0.83rem; font-weight:600;">Số lượng</label>
+                        <input type="number" id="quickQty" value="1" min="1" style="width:100%;">
+                    </div>
+                    <button class="btn-action warning" style="height:40px;" onclick="handleQuickExport()">
+                        <i class="fas fa-arrow-up"></i> Xuất kho
+                    </button>
+                </div>
+                <small id="quickPartInfo" style="display:none; margin-top:8px; color:#555;"></small>
+            </div>
+
+            <!-- Search -->
+            <div class="search-bar" style="margin-bottom: 14px;">
+                <input type="text" id="catalogSearch" placeholder="Tìm theo tên, mã linh kiện..." oninput="renderCatalog()">
+                <select id="catalogCategory" onchange="renderCatalog()">
+                    <option value="all">Tất cả danh mục</option>
+                    <option value="ram">Bộ nhớ RAM</option>
+                    <option value="ssd">Ổ cứng SSD / HDD</option>
+                    <option value="screen">Màn hình LCD / IPS</option>
+                    <option value="battery">Pin Laptop</option>
+                    <option value="keyboard">Bàn phím Laptop</option>
+                    <option value="mainboard">Mainboard / Chipset / IC</option>
+                    <option value="other">Vật tư phụ / Keo / Quạt</option>
+                </select>
+            </div>
+
+            <div id="catalogLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải danh mục linh kiện...</p>
+            </div>
+            <div id="catalogGrid" class="part-card-grid"></div>
+            <div id="catalogEmpty" class="empty-state" style="display:none;">
+                <span class="icon">📦</span>
+                <p>Không tìm thấy linh kiện phù hợp.</p>
+            </div>
+        </div>
+
+        <!-- TAB: BẢNG TỒN KHO -->
+        <div id="tabInventoryContent" style="display: none;">
             <div class="search-bar">
-                <input type="text" id="partSearch" placeholder="Tìm kiếm theo mã linh kiện, tên (SSD, RAM, Pin, Màn hình...)" oninput="filterParts()">
+                <input type="text" id="partSearch" placeholder="Tìm theo mã, tên linh kiện..." oninput="filterParts()">
                 <select id="partCategory" onchange="filterParts()">
                     <option value="all">Tất cả linh kiện</option>
                     <option value="ram">Bộ nhớ RAM</option>
@@ -68,7 +192,6 @@
                     <option value="other">Vật tư phụ / Keo / Quạt</option>
                 </select>
             </div>
-
             <div class="card">
                 <div class="card-body no-pad">
                     <div id="invLoading" class="loading">
@@ -82,9 +205,10 @@
                                 <th>Tên Linh Kiện</th>
                                 <th>Danh Mục</th>
                                 <th>Tồn Kho</th>
-                                <th>Mức Tối Thiểu</th>
-                                <th>Giá Nhập</th>
-                                <th>Giá Bán Sửa Chữa</th>
+                                <th>Tối Thiểu</th>
+                                <th>Giá Vốn</th>
+                                <th>Giá Bán</th>
+                                <th>Biên LN</th>
                                 <th>Trạng Thái</th>
                                 <th style="width: 120px;">Thao Tác</th>
                             </tr>
@@ -99,11 +223,11 @@
             </div>
         </div>
 
-        <!-- TAB 3: SPECIAL ORDERS  -->
+        <!-- TAB: SPECIAL ORDERS -->
         <div id="tabSpecialOrdersContent" style="display: none;">
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-shipping-fast"></i> Yêu Cầu Đặt Linh Kiện Đặc Thù Từ Kỹ Thuật Viên </h2>
+                    <h2><i class="fas fa-shipping-fast"></i> Yêu Cầu Đặt Linh Kiện Đặc Thù Từ Kỹ Thuật Viên</h2>
                     <button class="btn-action primary" onclick="openRequestPartModal()"><i class="fas fa-plus"></i> KTV Gửi yêu cầu đặt linh kiện</button>
                 </div>
                 <div class="card-body no-pad">
@@ -129,27 +253,30 @@
             </div>
         </div>
 
-        <!-- TAB 4: MOVEMENTS LOG (US.26) -->
+        <!-- TAB: MOVEMENTS LOG -->
         <div id="tabMovementsContent" style="display: none;">
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-history"></i> Nhật Ký Biến Động Nhập / Xuất Kho (Tự Động)</h2>
+                    <h2><i class="fas fa-history"></i> Nhật Ký Biến Động Nhập / Xuất Kho (Tự Động & Thủ Công)</h2>
                 </div>
                 <div class="card-body no-pad">
                     <table id="movementsTable">
                         <thead>
                             <tr>
                                 <th>Thời Gian</th>
-                                <th>Loại Nghiệp Vụ</th>
+                                <th>Loại</th>
                                 <th>Tên Linh Kiện</th>
                                 <th>Số Lượng</th>
-                                <th>Phiếu Ticket Liên Quan</th>
+                                <th>Ticket Liên Quan</th>
                                 <th>Người Thực Hiện</th>
                                 <th>Ghi Chú</th>
                             </tr>
                         </thead>
                         <tbody id="movementsBody"></tbody>
                     </table>
+                    <div id="movementsEmpty" class="empty-state" style="display:none;">
+                        <span class="icon">📋</span><p>Chưa có biến động kho nào được ghi nhận.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,13 +329,18 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="partImportPrice">Giá nhập kho (VNĐ)</label>
-                            <input type="number" id="partImportPrice" min="0" step="10000" placeholder="650000">
+                            <label for="partImportPrice">Giá vốn / Giá nhập kho (VNĐ) (*)</label>
+                            <input type="number" id="partImportPrice" min="0" step="10000" placeholder="650000" required>
+                            <small style="color:#888;">Giá mua từ nhà cung cấp</small>
                         </div>
                         <div class="form-group">
-                            <label for="partSellPrice">Giá bán / xuất thay thế (VNĐ) (*)</label>
+                            <label for="partSellPrice">Giá bán / Xuất thay thế (VNĐ) (*)</label>
                             <input type="number" id="partSellPrice" min="0" step="10000" placeholder="890000" required>
+                            <small style="color:#888;">Giá tính vào phiếu sửa chữa khách hàng</small>
                         </div>
+                    </div>
+                    <div id="marginPreview" style="background:#f0faf0; border-radius:8px; padding:10px 14px; font-size:0.88rem; display:none; margin-top:4px;">
+                        <strong>Biên lợi nhuận dự kiến: <span id="marginVal" style="color:#2e7d32;"></span></strong>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -219,7 +351,7 @@
         </div>
     </div>
 
-    <!-- Modal Stock Import / Export (US.26) -->
+    <!-- Modal Stock Import / Export -->
     <div id="stockModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
@@ -233,7 +365,6 @@
                         <label for="stockPartSelect">Chọn linh kiện (*)</label>
                         <select id="stockPartSelect" required></select>
                     </div>
-
                     <div class="form-row">
                         <div class="form-group">
                             <label for="stockQty">Số lượng (*)</label>
@@ -241,10 +372,9 @@
                         </div>
                         <div class="form-group" id="stockTicketGroup" style="display: none;">
                             <label for="stockTicketId">Mã Ticket sửa chữa liên quan</label>
-                            <input type="text" id="stockTicketId" placeholder="TK-20261020-001">
+                            <input type="text" id="stockTicketId" placeholder="TK-20261020-001" style="text-transform:uppercase;">
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="stockNote">Lý do / Ghi chú</label>
                         <input type="text" id="stockNote" placeholder="vd: Nhập lô hàng từ NPP hoặc Xuất thay màn hình">
@@ -258,11 +388,11 @@
         </div>
     </div>
 
-    <!-- Modal Special Part Request from KTV  -->
+    <!-- Modal Special Part Request -->
     <div id="requestModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3><i class="fas fa-paper-plane"></i> KTV Đề Xuất Nhập Linh Kiện Đặc Thù </h3>
+                <h3><i class="fas fa-paper-plane"></i> KTV Đề Xuất Nhập Linh Kiện Đặc Thù</h3>
                 <button class="modal-close" onclick="closeRequestModal()">&times;</button>
             </div>
             <form id="requestForm" onsubmit="handleSpecialPartRequest(event)">
@@ -303,8 +433,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-
-    <!-- App Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/auth.js"></script>
 
@@ -313,7 +441,12 @@
         let currentUser = null;
         let allParts = [];
         let allSpecialRequests = [];
-        let currentTabMode = 'inventory';
+        let currentTabMode = 'catalog';
+
+        const catMap = {
+            'ram': 'RAM', 'ssd': 'Ổ cứng SSD', 'screen': 'Màn hình',
+            'battery': 'Pin', 'keyboard': 'Bàn phím', 'mainboard': 'Mainboard', 'other': 'Khác'
+        };
 
         async function initPage() {
             const { user, userData } = await checkAdminAuth(["admin","quanlykho"], 'inventory', '../index.html');
@@ -331,24 +464,28 @@
         async function loadInventory() {
             try {
                 document.getElementById('invLoading').style.display = 'block';
+                document.getElementById('catalogLoading').style.display = 'block';
                 const snapshot = await db.collection('inventory').orderBy('name', 'asc').get();
                 allParts = [];
                 snapshot.forEach(doc => {
                     allParts.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Auto Seed sample inventory if empty
                 if (allParts.length === 0) {
                     await seedInitialInventory();
                     return;
                 }
 
+                updateStats();
                 updateLowStockBadge();
+                populateQuickPartSelect();
+                renderCatalog();
                 filterParts();
             } catch (err) {
                 console.error('Inventory load error:', err);
                 showToast('Lỗi tải kho: ' + err.message, 'error');
                 document.getElementById('invLoading').style.display = 'none';
+                document.getElementById('catalogLoading').style.display = 'none';
             }
         }
 
@@ -363,7 +500,6 @@
                 { partCode: "LK-KEY-ASUS", name: "Bàn phím Asus Zenbook UX430", category: "keyboard", quantity: 3, minQuantity: 2, importPrice: 240000, sellPrice: 450000 },
                 { partCode: "LK-KEO-MX4", name: "Tuýp keo tản nhiệt Arctic MX-4 4g", category: "other", quantity: 15, minQuantity: 5, importPrice: 85000, sellPrice: 150000 }
             ];
-
             for (const item of defaults) {
                 item.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 await db.collection('inventory').add(item);
@@ -371,9 +507,209 @@
             loadInventory();
         }
 
+        function updateStats() {
+            const low = allParts.filter(p => Number(p.quantity) <= Number(p.minQuantity));
+            const ok = allParts.filter(p => Number(p.quantity) > Number(p.minQuantity));
+            const totalVal = allParts.reduce((s, p) => s + (Number(p.quantity) * Number(p.importPrice || 0)), 0);
+            document.getElementById('statTotal').textContent = allParts.length;
+            document.getElementById('statOk').textContent = ok.length;
+            document.getElementById('statLow').textContent = low.length;
+            document.getElementById('statValue').textContent = formatVND(totalVal);
+        }
+
         function updateLowStockBadge() {
             const lowItems = allParts.filter(p => Number(p.quantity) <= Number(p.minQuantity));
             document.getElementById('lowStockCount').textContent = lowItems.length;
+        }
+
+        function populateQuickPartSelect() {
+            const sel = document.getElementById('quickPartSelect');
+            sel.innerHTML = '<option value="">-- Chọn linh kiện --</option>';
+            allParts.forEach(p => {
+                sel.innerHTML += `<option value="${p.id}" data-qty="${p.quantity}" data-price="${p.sellPrice || 0}" data-name="${p.name}">${p.name} (Tồn: ${p.quantity} | ${formatVND(p.sellPrice)})</option>`;
+            });
+            const stockSel = document.getElementById('stockPartSelect');
+            if (stockSel) {
+                stockSel.innerHTML = '';
+                allParts.forEach(p => {
+                    stockSel.innerHTML += `<option value="${p.id}" data-name="${p.name}" data-qty="${p.quantity}">${p.name} (Hiện có: ${p.quantity})</option>`;
+                });
+            }
+        }
+
+        function onQuickPartChange() {
+            const sel = document.getElementById('quickPartSelect');
+            const opt = sel.options[sel.selectedIndex];
+            const info = document.getElementById('quickPartInfo');
+            if (!sel.value) { info.style.display = 'none'; return; }
+            const qty = opt.getAttribute('data-qty');
+            const price = opt.getAttribute('data-price');
+            info.textContent = `Tồn kho hiện có: ${qty} cái · Giá bán: ${formatVND(Number(price))}`;
+            info.style.display = 'block';
+        }
+
+        async function handleQuickExport() {
+            const ticketId = document.getElementById('quickTicketId').value.trim().toUpperCase();
+            const sel = document.getElementById('quickPartSelect');
+            const qty = Number(document.getElementById('quickQty').value || 1);
+
+            if (!ticketId) { showToast('Vui lòng nhập mã Ticket!', 'warning'); return; }
+            if (!sel.value) { showToast('Vui lòng chọn linh kiện!', 'warning'); return; }
+
+            const opt = sel.options[sel.selectedIndex];
+            const partId = sel.value;
+            const partName = opt.getAttribute('data-name');
+            const currentQty = Number(opt.getAttribute('data-qty') || 0);
+            const sellPrice = Number(opt.getAttribute('data-price') || 0);
+
+            if (qty > currentQty) {
+                showToast(`Không đủ tồn kho! Hiện còn ${currentQty} cái.`, 'error');
+                return;
+            }
+
+            try {
+                const newQty = currentQty - qty;
+                const batch = db.batch();
+
+                // Trừ tồn kho
+                batch.update(db.collection('inventory').doc(partId), {
+                    quantity: newQty,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Ghi lịch sử
+                batch.set(db.collection('stockMovements').doc(), {
+                    type: 'export',
+                    partId,
+                    partName,
+                    quantity: qty,
+                    ticketId,
+                    note: `Xuất kho theo Ticket: ${ticketId}`,
+                    performedBy: currentUser ? currentUser.fullName : 'Quản lý kho',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Cộng chi phí vào ticket (nếu ticket tồn tại)
+                const ticketSnap = await db.collection('tickets').where('ticketId', '==', ticketId).limit(1).get();
+                if (!ticketSnap.empty) {
+                    const ticketDoc = ticketSnap.docs[0];
+                    const ticketData = ticketDoc.data();
+                    const existingQuotation = Array.isArray(ticketData.quotation) ? ticketData.quotation : [];
+                    const existingIdx = existingQuotation.findIndex(q => q.partId === partId);
+                    if (existingIdx >= 0) {
+                        existingQuotation[existingIdx].qty += qty;
+                    } else {
+                        existingQuotation.push({ partId, name: partName, qty, price: sellPrice });
+                    }
+                    const newTotal = existingQuotation.reduce((s, q) => s + (q.qty * q.price), 0);
+                    batch.update(db.collection('tickets').doc(ticketDoc.id), {
+                        quotation: existingQuotation,
+                        totalCost: newTotal,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
+                await batch.commit();
+                showToast(`✅ Đã xuất ${qty} "${partName}" → Ticket ${ticketId} (Tồn còn: ${newQty})`, 'success', 5000);
+                document.getElementById('quickTicketId').value = '';
+                document.getElementById('quickQty').value = '1';
+                sel.value = '';
+                document.getElementById('quickPartInfo').style.display = 'none';
+                loadInventory();
+                loadMovements();
+            } catch (err) {
+                showToast('Lỗi xuất kho: ' + err.message, 'error');
+            }
+        }
+
+        // ===== CATALOG TAB =====
+        function renderCatalog() {
+            const kw = (document.getElementById('catalogSearch').value || '').toLowerCase().trim();
+            const cat = document.getElementById('catalogCategory').value;
+            document.getElementById('catalogLoading').style.display = 'none';
+
+            let filtered = allParts.filter(p => {
+                const matchKw = (p.name || '').toLowerCase().includes(kw) || (p.partCode || '').toLowerCase().includes(kw);
+                const matchCat = cat === 'all' || p.category === cat;
+                return matchKw && matchCat;
+            });
+
+            if (currentTabMode === 'lowStock') {
+                filtered = filtered.filter(p => Number(p.quantity) <= Number(p.minQuantity));
+            }
+
+            const grid = document.getElementById('catalogGrid');
+            const empty = document.getElementById('catalogEmpty');
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            filtered.forEach(p => {
+                const isLow = Number(p.quantity) <= Number(p.minQuantity);
+                const margin = p.importPrice > 0 ? Math.round(((p.sellPrice - p.importPrice) / p.importPrice) * 100) : 0;
+                const marginClass = margin >= 20 ? 'margin-good' : 'margin-warn';
+
+                grid.innerHTML += `
+                    <div class="part-card ${isLow ? 'low-stock-card' : ''}">
+                        <div class="part-card-meta">
+                            <span class="badge badge-info">${catMap[p.category] || p.category}</span>
+                            ${isLow
+                                ? '<span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Sắp hết</span>'
+                                : '<span class="badge badge-success"><i class="fas fa-check"></i> Sẵn sàng</span>'}
+                        </div>
+                        <div class="part-card-name">${p.name}</div>
+                        <div style="font-size:0.78rem; color:#888; margin-bottom:8px;">Mã: <strong>${p.partCode || '---'}</strong></div>
+
+                        <div class="part-card-prices">
+                            <div class="price-box">
+                                <div class="lbl">💰 Giá vốn</div>
+                                <div class="val green">${formatVND(p.importPrice)}</div>
+                            </div>
+                            <div class="price-box">
+                                <div class="lbl">🏷️ Giá bán</div>
+                                <div class="val red">${formatVND(p.sellPrice)}</div>
+                            </div>
+                            <div class="price-box">
+                                <div class="lbl">📦 Tồn kho</div>
+                                <div class="val ${isLow ? 'red' : 'green'}">${p.quantity} cái</div>
+                            </div>
+                            <div class="price-box">
+                                <div class="lbl">📈 Biên LN</div>
+                                <div class="val"><span class="margin-badge ${marginClass}">+${margin}%</span></div>
+                            </div>
+                        </div>
+
+                        <div class="part-card-actions">
+                            <button class="btn-edit-card" onclick="editPart('${p.id}')"><i class="fas fa-edit"></i> Sửa</button>
+                            <button class="btn-import-card" onclick="openStockModalForPart('${p.id}', 'import')"><i class="fas fa-arrow-down"></i> Nhập</button>
+                            <button class="btn-export-card" onclick="openStockModalForPart('${p.id}', 'export')"><i class="fas fa-arrow-up"></i> Xuất</button>
+                            <button class="btn-del-card" onclick="deletePart('${p.id}', '${p.name.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ===== TABLE TAB =====
+        function filterParts() {
+            const kw = (document.getElementById('partSearch') ? document.getElementById('partSearch').value : '').toLowerCase().trim();
+            const cat = document.getElementById('partCategory') ? document.getElementById('partCategory').value : 'all';
+
+            let filtered = allParts.filter(p => {
+                const matchKw = (p.name || '').toLowerCase().includes(kw) || (p.partCode || '').toLowerCase().includes(kw);
+                const matchCat = cat === 'all' || p.category === cat;
+                return matchKw && matchCat;
+            });
+
+            if (currentTabMode === 'lowStock') {
+                filtered = filtered.filter(p => Number(p.quantity) <= Number(p.minQuantity));
+            }
+
+            renderPartsTable(filtered);
         }
 
         function renderPartsTable(list) {
@@ -392,36 +728,33 @@
             table.style.display = 'table';
             tbody.innerHTML = '';
 
-            const catMap = {
-                'ram': 'RAM', 'ssd': 'Ổ cứng SSD', 'screen': 'Màn hình',
-                'battery': 'Pin', 'keyboard': 'Bàn phím', 'mainboard': 'Mainboard', 'other': 'Khác'
-            };
-
             list.forEach(p => {
                 const isLow = Number(p.quantity) <= Number(p.minQuantity);
+                const margin = p.importPrice > 0 ? Math.round(((p.sellPrice - p.importPrice) / p.importPrice) * 100) : 0;
                 tbody.innerHTML += `
                     <tr class="${isLow ? 'low-stock' : ''}">
-                        <td><strong>${p.partCode}</strong></td>
+                        <td><strong>${p.partCode || '---'}</strong></td>
                         <td>${p.name}</td>
                         <td><span class="badge badge-info">${catMap[p.category] || p.category}</span></td>
                         <td>
                             <strong style="font-size:1.05rem; color:${isLow ? '#e53935' : '#2e7d32'};">
                                 ${p.quantity}
                             </strong>
+                            <br><small style="color:#999;">min: ${p.minQuantity}</small>
                         </td>
                         <td>${p.minQuantity}</td>
-                        <td>${formatVND(p.importPrice)}</td>
+                        <td style="color:#2e7d32; font-weight:600;">${formatVND(p.importPrice)}</td>
                         <td><strong style="color:var(--danger);">${formatVND(p.sellPrice)}</strong></td>
+                        <td><span style="background:${margin>=20?'#e8f5e9':'#fff3e0'};color:${margin>=20?'#2e7d32':'#e65100'};padding:2px 8px;border-radius:10px;font-size:0.8rem;font-weight:600;">+${margin}%</span></td>
                         <td>
-                            ${isLow ? 
-                                '<span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Sắp hết hàng</span>' : 
-                                '<span class="badge badge-success"><i class="fas fa-check"></i> Sẵn sàng</span>'
-                            }
+                            ${isLow
+                                ? '<span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Sắp hết hàng</span>'
+                                : '<span class="badge badge-success"><i class="fas fa-check"></i> Sẵn sàng</span>'}
                         </td>
                         <td>
                             <div class="actions">
                                 <button class="btn-sm edit" title="Sửa linh kiện" onclick="editPart('${p.id}')"><i class="fas fa-edit"></i></button>
-                                <button class="btn-sm delete" title="Xóa" onclick="deletePart('${p.id}', '${p.name}')"><i class="fas fa-trash-alt"></i></button>
+                                <button class="btn-sm delete" title="Xóa" onclick="deletePart('${p.id}', '${p.name.replace(/'/g, "\\'")}')"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -429,33 +762,19 @@
             });
         }
 
-        function filterParts() {
-            const kw = document.getElementById('partSearch').value.toLowerCase().trim();
-            const cat = document.getElementById('partCategory').value;
-
-            let filtered = allParts.filter(p => {
-                const matchKw = p.name.toLowerCase().includes(kw) || (p.partCode && p.partCode.toLowerCase().includes(kw));
-                const matchCat = cat === 'all' || p.category === cat;
-                return matchKw && matchCat;
-            });
-
-            if (currentTabMode === 'lowStock') {
-                filtered = filtered.filter(p => Number(p.quantity) <= Number(p.minQuantity));
-            }
-
-            renderPartsTable(filtered);
-        }
-
         function switchTab(tab, btn) {
             document.querySelectorAll('.filter-tabs .tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
 
-            document.getElementById('tabInventoryContent').style.display = (tab === 'inventory' || tab === 'lowStock') ? 'block' : 'none';
+            document.getElementById('tabCatalogContent').style.display = (tab === 'catalog' || tab === 'lowStock') ? 'block' : 'none';
+            document.getElementById('tabInventoryContent').style.display = (tab === 'inventory') ? 'block' : 'none';
             document.getElementById('tabSpecialOrdersContent').style.display = (tab === 'specialOrders') ? 'block' : 'none';
             document.getElementById('tabMovementsContent').style.display = (tab === 'movements') ? 'block' : 'none';
 
             currentTabMode = tab;
-            if (tab === 'inventory' || tab === 'lowStock') {
+            if (tab === 'catalog' || tab === 'lowStock') {
+                renderCatalog();
+            } else if (tab === 'inventory') {
                 filterParts();
             } else if (tab === 'specialOrders') {
                 loadSpecialRequests();
@@ -464,15 +783,40 @@
             }
         }
 
+        // ===== PART MODAL =====
         function openPartModal() {
             document.getElementById('partForm').reset();
             document.getElementById('editPartId').value = '';
             document.getElementById('partModalTitle').innerHTML = '<i class="fas fa-box"></i> Thêm Linh Kiện Mới';
+            document.getElementById('marginPreview').style.display = 'none';
             document.getElementById('partModal').classList.add('active');
         }
 
         function closePartModal() {
             document.getElementById('partModal').classList.remove('active');
+        }
+
+        // Live margin preview
+        document.addEventListener('DOMContentLoaded', () => {
+            ['partImportPrice','partSellPrice'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', updateMarginPreview);
+            });
+        });
+
+        function updateMarginPreview() {
+            const imp = Number(document.getElementById('partImportPrice').value || 0);
+            const sell = Number(document.getElementById('partSellPrice').value || 0);
+            const preview = document.getElementById('marginPreview');
+            if (imp > 0 && sell > 0) {
+                const margin = Math.round(((sell - imp) / imp) * 100);
+                const profit = sell - imp;
+                document.getElementById('marginVal').textContent = `+${margin}% (lãi ${formatVND(profit)}/cái)`;
+                document.getElementById('marginVal').style.color = margin >= 20 ? '#2e7d32' : '#e65100';
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
         }
 
         function editPart(id) {
@@ -490,6 +834,7 @@
 
             document.getElementById('partModalTitle').innerHTML = '<i class="fas fa-edit"></i> Chỉnh Sửa Linh Kiện';
             document.getElementById('partModal').classList.add('active');
+            updateMarginPreview();
         }
 
         async function handleSavePart(e) {
@@ -539,7 +884,7 @@
             }
         }
 
-        // STOCK IMPORT / EXPORT (US.26)
+        // ===== STOCK MODAL =====
         function openStockModal(type) {
             document.getElementById('stockForm').reset();
             document.getElementById('stockMovementType').value = type;
@@ -550,17 +895,20 @@
                 title.innerHTML = '<i class="fas fa-arrow-down" style="color:#43a047;"></i> Nhập Kho Linh Kiện Mới';
                 ticketGroup.style.display = 'none';
             } else {
-                title.innerHTML = '<i class="fas fa-arrow-up" style="color:#f57c00;"></i> Xuất Kho Linh Kiện Cho KTV (Trừ Tồn Kho)';
+                title.innerHTML = '<i class="fas fa-arrow-up" style="color:#f57c00;"></i> Xuất Kho Linh Kiện (Trừ Tồn Kho)';
                 ticketGroup.style.display = 'block';
             }
 
-            const select = document.getElementById('stockPartSelect');
-            select.innerHTML = '';
-            allParts.forEach(p => {
-                select.innerHTML += `<option value="${p.id}" data-name="${p.name}" data-qty="${p.quantity}">${p.name} (Hiện có: ${p.quantity})</option>`;
-            });
-
+            populateQuickPartSelect();
             document.getElementById('stockModal').classList.add('active');
+        }
+
+        function openStockModalForPart(partId, type) {
+            openStockModal(type);
+            setTimeout(() => {
+                const sel = document.getElementById('stockPartSelect');
+                sel.value = partId;
+            }, 100);
         }
 
         function closeStockModal() {
@@ -575,7 +923,7 @@
             const partName = partSelect.options[partSelect.selectedIndex].getAttribute('data-name');
             const currentQty = Number(partSelect.options[partSelect.selectedIndex].getAttribute('data-qty'));
             const qty = Number(document.getElementById('stockQty').value);
-            const ticketId = document.getElementById('stockTicketId').value.trim().toUpperCase();
+            const ticketId = (document.getElementById('stockTicketId').value || '').trim().toUpperCase();
             const note = document.getElementById('stockNote').value.trim();
             const btn = document.getElementById('btnSubmitStock');
 
@@ -588,13 +936,11 @@
                 btn.disabled = true;
                 const newQty = type === 'import' ? (currentQty + qty) : (currentQty - qty);
 
-                // Update part quantity in Firestore
                 await db.collection('inventory').doc(partId).update({
                     quantity: newQty,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // Record stock movement (US.26)
                 await db.collection('stockMovements').add({
                     type,
                     partId,
@@ -606,7 +952,7 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showToast(`Đã ${type === 'import' ? 'nhập' : 'xuất'} thành công ${qty} ${partName}!`, 'success');
+                showToast(`Đã ${type === 'import' ? 'nhập' : 'xuất'} thành công ${qty} "${partName}"!`, 'success');
                 closeStockModal();
                 btn.disabled = false;
                 loadInventory();
@@ -617,12 +963,19 @@
             }
         }
 
-        // LOAD MOVEMENTS
+        // ===== MOVEMENTS =====
         async function loadMovements() {
             try {
-                const snapshot = await db.collection('stockMovements').orderBy('createdAt', 'desc').limit(50).get();
+                const snapshot = await db.collection('stockMovements').orderBy('createdAt', 'desc').limit(100).get();
                 const tbody = document.getElementById('movementsBody');
+                const empty = document.getElementById('movementsEmpty');
                 tbody.innerHTML = '';
+
+                if (snapshot.empty) {
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
 
                 snapshot.forEach(doc => {
                     const m = doc.data();
@@ -637,7 +990,9 @@
                             </td>
                             <td><strong>${m.partName}</strong></td>
                             <td><strong style="color:${isImp ? '#2e7d32' : '#e65100'};">${isImp ? '+' : '-'}${m.quantity}</strong></td>
-                            <td>${m.ticketId || '---'}</td>
+                            <td>${m.ticketId && m.ticketId !== 'Không gắn Ticket'
+                                ? `<span class="badge badge-info">${m.ticketId}</span>`
+                                : '---'}</td>
                             <td>${m.performedBy || 'Nhân viên'}</td>
                             <td>${m.note || '---'}</td>
                         </tr>
@@ -648,7 +1003,7 @@
             }
         }
 
-        // SPECIAL REQUESTS (US.28)
+        // ===== SPECIAL REQUESTS =====
         function openRequestPartModal() {
             document.getElementById('requestForm').reset();
             document.getElementById('requestModal').classList.add('active');
@@ -675,7 +1030,7 @@
                     quantity: qty,
                     estimatedCost: estCost,
                     reason,
-                    status: 'pending', // pending, ordered, received
+                    status: 'pending',
                     ktvName: currentUser ? currentUser.fullName : 'Kỹ thuật viên',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
