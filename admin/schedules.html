@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch Trực & Phân Ca Kỹ Thuật Viên - TechCare Pro</title>
@@ -12,7 +13,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 20px;
-            background: #fff;
+            background: var(--card-bg); border: 1px solid var(--border);
             padding: 14px 20px;
             border-radius: 10px;
             box-shadow: var(--shadow);
@@ -149,6 +150,7 @@
     <!-- App Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/chatbot.js"></script>
 
     <script>
         applyCachedUserInfo('schedules');

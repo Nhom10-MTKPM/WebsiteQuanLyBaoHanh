@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Kho & Linh Kiện - TechCare Pro</title>
@@ -8,42 +9,184 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .stats-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
-        .stat-card { flex: 1; min-width: 160px; background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(0,0,0,.07); display: flex; align-items: center; gap: 12px; }
+        .stat-card { flex: 1; min-width: 160px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; }
         .stat-card .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-        .stat-card .stat-val { font-size: 1.5rem; font-weight: 700; line-height: 1; }
-        .stat-card .stat-lbl { font-size: 0.78rem; color: #777; margin-top: 2px; }
-        .si-blue { background: #e3f2fd; color: #1565c0; }
-        .si-green { background: #e8f5e9; color: #2e7d32; }
-        .si-orange { background: #fff3e0; color: #e65100; }
-        .si-red { background: #fce4ec; color: #c62828; }
-        .price-breakdown { font-size: 0.78rem; color: #888; }
+        .stat-card .stat-val { font-size: 1.5rem; font-weight: 700; line-height: 1; color: var(--text-heading); }
+        .stat-card .stat-lbl { font-size: 0.78rem; color: var(--text-light); margin-top: 2px; }
+        .si-blue { background: var(--info-bg); color: var(--info); }
+        .si-green { background: var(--success-bg); color: var(--success); }
+        .si-orange { background: var(--warning-bg); color: var(--warning); }
+        .si-red { background: var(--danger-bg); color: var(--danger); }
+        .price-breakdown { font-size: 0.78rem; color: var(--text-light); }
         .margin-badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
-        .margin-good { background: #e8f5e9; color: #2e7d32; }
-        .margin-warn { background: #fff3e0; color: #e65100; }
-        .ticket-export-section { background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border: 1px solid #bbdefb; border-radius: 10px; padding: 16px; margin-bottom: 18px; }
-        .ticket-export-section h4 { margin: 0 0 10px; color: #1565c0; font-size: 0.95rem; }
+        .margin-good { background: var(--success-bg); color: var(--success); }
+        .margin-warn { background: var(--warning-bg); color: var(--warning); }
+        .ticket-export-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .ticket-export-header {
+            background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ticket-export-header .te-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,.2);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .ticket-export-header .te-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .ticket-export-header .te-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,.8);
+            margin: 2px 0 0;
+            line-height: 1.3;
+        }
+        .ticket-export-body {
+            padding: 14px 18px;
+            background: var(--card-bg);
+        }
+        .ticket-export-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .te-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .te-field.te-ticket { flex: 1; min-width: 160px; }
+        .te-field.te-part { flex: 2.5; min-width: 220px; }
+        .te-field.te-qty { flex: 0 0 85px; }
+        .te-field label {
+            font-size: 0.67rem;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .te-field label i {
+            font-size: 0.6rem;
+            color: var(--accent);
+        }
+        .te-field input,
+        .te-field select {
+            height: 33px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 0.8rem;
+            background: var(--input-bg);
+            color: var(--text);
+            font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .te-field input:focus,
+        .te-field select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(14,165,233,.15);
+        }
+        .te-field input::placeholder { color: var(--text-muted); font-size: 0.8rem; }
+        .te-field select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 9px center;
+            background-size: 14px 14px;
+            padding-right: 28px;
+        }
+        .te-field select.is-placeholder {
+            color: var(--text-muted);
+        }
+        .te-field select option {
+            color: var(--text);
+            background: var(--card-bg);
+        }
+        .te-btn-export {
+            height: 33px;
+            padding: 0 16px;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: transform .15s, box-shadow .15s;
+            box-shadow: 0 2px 6px rgba(217,119,6,.25);
+        }
+        .te-btn-export:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(217,119,6,.35);
+        }
+        .te-btn-export:active { transform: translateY(0); }
+        .te-part-info {
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: var(--info-bg);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+            font-size: 0.78rem;
+            color: var(--text);
+            display: none;
+        }
+        .te-part-info i { color: var(--accent); margin-right: 4px; }
         .part-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; margin-top: 10px; }
-        .part-card { background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.07); border-left: 4px solid var(--primary, #1a73e8); transition: transform .15s; }
-        .part-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.12); }
-        .part-card.low-stock-card { border-left-color: #e53935; }
-        .part-card-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+        .part-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 15px; box-shadow: var(--shadow); border-left: 4px solid var(--accent); transition: transform .15s, box-shadow .15s; }
+        .part-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .part-card.low-stock-card { border-left-color: var(--danger); }
+        .part-card-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; color: var(--text-heading); }
         .part-card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .part-card-prices { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.85rem; }
-        .price-box { background: #f8f9fa; border-radius: 6px; padding: 6px 10px; }
-        .price-box .lbl { font-size: 0.72rem; color: #888; }
-        .price-box .val { font-weight: 700; }
-        .price-box .val.green { color: #2e7d32; }
-        .price-box .val.red { color: #c62828; }
+        .price-box { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; }
+        .price-box .lbl { font-size: 0.72rem; color: var(--text-light); }
+        .price-box .val { font-weight: 700; color: var(--text-heading); }
+        .price-box .val.green { color: var(--success); }
+        .price-box .val.red { color: var(--danger); }
         .part-card-actions { display: flex; gap: 8px; margin-top: 10px; }
-        .part-card-actions button { flex: 1; font-size: 0.82rem; padding: 6px 0; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
-        .btn-edit-card { background: #e3f2fd; color: #1565c0; }
-        .btn-edit-card:hover { background: #bbdefb; }
-        .btn-del-card { background: #fce4ec; color: #c62828; }
-        .btn-del-card:hover { background: #f8bbd0; }
-        .btn-import-card { background: #e8f5e9; color: #2e7d32; }
-        .btn-import-card:hover { background: #c8e6c9; }
-        .btn-export-card { background: #fff3e0; color: #e65100; }
-        .btn-export-card:hover { background: #ffe0b2; }
+        .part-card-actions button { flex: 1; font-size: 0.82rem; padding: 6px 0; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: all .15s; }
+        .btn-edit-card { background: var(--info-bg); color: var(--info); }
+        .btn-edit-card:hover { filter: brightness(0.92); }
+        .btn-del-card { background: var(--danger-bg); color: var(--danger); }
+        .btn-del-card:hover { filter: brightness(0.92); }
+        .btn-import-card { background: var(--success-bg); color: var(--success); }
+        .btn-import-card:hover { filter: brightness(0.92); }
+        .btn-export-card { background: var(--warning-bg); color: var(--warning); }
+        .btn-export-card:hover { filter: brightness(0.92); }
     </style>
 </head>
 <body>
@@ -74,8 +217,8 @@
     <main class="main-content">
         <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div>
-                <h1>📦 Quản Lý Kho & Linh Kiện (Inventory Core)</h1>
-                <p>Danh mục linh kiện · Giá vốn · Giá bán · Xuất/Trừ kho tự động theo Ticket KTV</p>
+                <h1>📦 Quản Lý Kho & Linh Kiện</h1>
+                <p>Danh mục linh kiện · Giá vốn · Giá bán · Xuất/Trừ kho tự động theo Ticket Kỹ Thuật Viên</p>
             </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn-action success" onclick="openStockModal('import')"><i class="fas fa-arrow-down"></i> Nhập kho</button>
@@ -129,26 +272,39 @@
         <div id="tabCatalogContent">
             <!-- Xuất/Trừ kho theo Ticket -->
             <div class="ticket-export-section">
-                <h4><i class="fas fa-ticket-alt"></i> Xuất/Trừ Kho Theo Mã Ticket</h4>
-                <p style="font-size:0.85rem; color:#444; margin:0 0 10px;">Nhập mã ticket để xuất linh kiện, hệ thống sẽ tự động trừ tồn kho và cộng vào tổng chi phí phiếu đó.</p>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
-                    <div style="flex:1; min-width:180px;">
-                        <label style="font-size:0.83rem; font-weight:600;">Mã Ticket (*)</label>
-                        <input type="text" id="quickTicketId" placeholder="TK-20261028-001" style="width:100%; box-sizing:border-box; text-transform:uppercase;">
+                <div class="ticket-export-header">
+                    <div class="te-icon">
+                        <i class="fas fa-ticket-alt"></i>
                     </div>
-                    <div style="flex:2; min-width:200px;">
-                        <label style="font-size:0.83rem; font-weight:600;">Chọn linh kiện (*)</label>
-                        <select id="quickPartSelect" style="width:100%;" onchange="onQuickPartChange()"></select>
+                    <div>
+                        <div class="te-title">Xuất/Trừ Kho Theo Mã Ticket</div>
+                        <div class="te-subtitle">Nhập mã ticket để xuất linh kiện — hệ thống tự động trừ tồn kho & cộng chi phí vào phiếu</div>
                     </div>
-                    <div style="flex:0 0 90px;">
-                        <label style="font-size:0.83rem; font-weight:600;">Số lượng</label>
-                        <input type="number" id="quickQty" value="1" min="1" style="width:100%;">
-                    </div>
-                    <button class="btn-action warning" style="height:40px;" onclick="handleQuickExport()">
-                        <i class="fas fa-arrow-up"></i> Xuất kho
-                    </button>
                 </div>
-                <small id="quickPartInfo" style="display:none; margin-top:8px; color:#555;"></small>
+                <div class="ticket-export-body">
+                    <div class="ticket-export-form">
+                        <div class="te-field te-ticket">
+                            <label><i class="fas fa-hashtag"></i> Mã Ticket (*)</label>
+                            <input type="text" id="quickTicketId" placeholder="TK-20261028-001" style="text-transform:uppercase;">
+                        </div>
+                        <div class="te-field te-part">
+                            <label><i class="fas fa-microchip"></i> Chọn linh kiện (*)</label>
+                            <select id="quickPartSelect" class="is-placeholder" onchange="onQuickPartChange()">
+                                <option value="" selected>Chọn linh kiện cần xuất...</option>
+                            </select>
+                        </div>
+                        <div class="te-field te-qty">
+                            <label><i class="fas fa-sort-numeric-up"></i> Số lượng</label>
+                            <input type="number" id="quickQty" value="1" min="1">
+                        </div>
+                        <button class="te-btn-export" onclick="handleQuickExport()">
+                            <i class="fas fa-arrow-up"></i> Xuất kho
+                        </button>
+                    </div>
+                    <div class="te-part-info" id="quickPartInfo">
+                        <i class="fas fa-info-circle"></i> <span></span>
+                    </div>
+                </div>
             </div>
 
             <!-- Search -->
@@ -435,6 +591,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/chatbot.js"></script>
 
     <script>
         applyCachedUserInfo('inventory');
@@ -524,7 +681,8 @@
 
         function populateQuickPartSelect() {
             const sel = document.getElementById('quickPartSelect');
-            sel.innerHTML = '<option value="">-- Chọn linh kiện --</option>';
+            sel.innerHTML = '<option value="" selected>Chọn linh kiện cần xuất...</option>';
+            sel.classList.add('is-placeholder');
             allParts.forEach(p => {
                 sel.innerHTML += `<option value="${p.id}" data-qty="${p.quantity}" data-price="${p.sellPrice || 0}" data-name="${p.name}">${p.name} (Tồn: ${p.quantity} | ${formatVND(p.sellPrice)})</option>`;
             });
@@ -541,11 +699,23 @@
             const sel = document.getElementById('quickPartSelect');
             const opt = sel.options[sel.selectedIndex];
             const info = document.getElementById('quickPartInfo');
-            if (!sel.value) { info.style.display = 'none'; return; }
+            if (!sel.value) {
+                sel.classList.add('is-placeholder');
+                info.style.display = 'none';
+                return;
+            }
+            sel.classList.remove('is-placeholder');
             const qty = opt.getAttribute('data-qty');
             const price = opt.getAttribute('data-price');
-            info.textContent = `Tồn kho hiện có: ${qty} cái · Giá bán: ${formatVND(Number(price))}`;
-            info.style.display = 'block';
+            const span = info.querySelector('span');
+            if (span) {
+                span.textContent = `Tồn kho hiện có: ${qty} cái · Giá bán: ${formatVND(Number(price))}`;
+            } else {
+                info.innerHTML = `<i class="fas fa-info-circle"></i> Tồn kho hiện có: ${qty} cái · Giá bán: ${formatVND(Number(price))}`;
+            }
+            info.style.display = 'flex';
+            info.style.alignItems = 'center';
+            info.style.gap = '6px';
         }
 
         async function handleQuickExport() {
@@ -614,6 +784,7 @@
                 document.getElementById('quickTicketId').value = '';
                 document.getElementById('quickQty').value = '1';
                 sel.value = '';
+                sel.classList.add('is-placeholder');
                 document.getElementById('quickPartInfo').style.display = 'none';
                 loadInventory();
                 loadMovements();

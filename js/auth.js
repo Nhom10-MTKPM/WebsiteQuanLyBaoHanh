@@ -308,6 +308,7 @@ function updateUserDisplay(userData, activePage) {
     // Sinh lại sidebar theo đúng vai trò
     if (activePage) {
         generateSidebar(userData.role, activePage);
+    if (typeof initTheme === 'function') initTheme();
     }
 }
 
@@ -584,3 +585,188 @@ function generateSidebar(role, activePage) {
         sidebarNav.innerHTML = navHTML;
     }
 }
+
+
+// ==========================================
+// TechCare Pro - Dark / Light Theme System
+// ==========================================
+
+/**
+ * Lấy theme hiện tại ('dark' hoặc 'light')
+ */
+function getCurrentTheme() {
+    return localStorage.getItem('techcare_theme') || 'light';
+}
+
+/**
+ * Đặt theme và cập nhật toàn bộ UI
+ */
+function setTheme(theme, showNotice = false) {
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('techcare_theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('techcare_theme', 'light');
+    }
+    updateThemeToggleUI(theme);
+    if (showNotice && typeof showToast === 'function') {
+        showToast(theme === 'dark' ? 'Đã bật Chế độ tối 🌙' : 'Đã bật Chế độ sáng ☀️', 'info', 1800);
+    }
+}
+
+/**
+ * Đảo ngược theme khi bấm nút
+ */
+function toggleTheme() {
+    const current = getCurrentTheme();
+    const nextTheme = current === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme, true);
+}
+
+/**
+ * Cập nhật icon, chữ và trạng thái của tất cả nút toggle trên trang
+ */
+function updateThemeToggleUI(theme) {
+    const isDark = theme === 'dark';
+    
+    // Cập nhật nút trong sidebar
+    const sidebarLabels = document.querySelectorAll('.theme-switch-label');
+    sidebarLabels.forEach(el => {
+        el.textContent = isDark ? 'Chế độ tối' : 'Chế độ sáng';
+    });
+    const sidebarButtons = document.querySelectorAll('.btn-theme-switch');
+    sidebarButtons.forEach(btn => {
+        btn.classList.toggle('is-dark', isDark);
+        btn.setAttribute('title', isDark ? 'Chuyển sang Chế độ sáng' : 'Chuyển sang Chế độ tối');
+    });
+
+    // Cập nhật nút floating
+    const floatingBtns = document.querySelectorAll('.floating-theme-toggle');
+    floatingBtns.forEach(btn => {
+        btn.classList.toggle('is-dark', isDark);
+        btn.setAttribute('title', isDark ? 'Chuyển sang Chế độ sáng' : 'Chuyển sang Chế độ tối');
+    });
+
+    // Cập nhật nút trong public nav nếu có
+    const publicNavBtns = document.querySelectorAll('.public-nav-theme-btn');
+    publicNavBtns.forEach(btn => {
+        btn.innerHTML = isDark 
+            ? '<i class="fas fa-sun" style="color:#fbbf24;"></i> Chế độ sáng' 
+            : '<i class="fas fa-moon"></i> Chế độ tối';
+    });
+}
+
+/**
+ * Khởi tạo theme và tự động tiêm nút toggle vào trang
+ */
+function initTheme() {
+    const currentTheme = getCurrentTheme();
+    if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+
+    // 1. Tự động tiêm vào .sidebar-footer nếu có và chưa có nút
+    const sidebarFooter = document.querySelector('.sidebar-footer');
+    if (sidebarFooter && !document.getElementById('sidebarThemeToggleWrap')) {
+        const wrap = document.createElement('div');
+        wrap.id = 'sidebarThemeToggleWrap';
+        wrap.className = 'sidebar-theme-toggle';
+        wrap.innerHTML = `
+            <button type="button" class="btn-theme-switch ${currentTheme === 'dark' ? 'is-dark' : ''}" onclick="toggleTheme()" title="${currentTheme === 'dark' ? 'Chuyển sang Chế độ sáng' : 'Chuyển sang Chế độ tối'}">
+                <div class="theme-icon-wrap">
+                    <i class="fas fa-moon icon-moon"></i>
+                    <i class="fas fa-sun icon-sun"></i>
+                </div>
+                <span class="theme-switch-label">${currentTheme === 'dark' ? 'Chế độ tối' : 'Chế độ sáng'}</span>
+                <div class="theme-switch-track">
+                    <div class="theme-switch-thumb"></div>
+                </div>
+            </button>
+        `;
+        const logoutBtn = sidebarFooter.querySelector('.btn-logout');
+        if (logoutBtn) {
+            sidebarFooter.insertBefore(wrap, logoutBtn);
+        } else {
+            sidebarFooter.appendChild(wrap);
+        }
+    }
+
+    // 2. Tự động tiêm vào .public-header nav nếu có
+    const publicNav = document.querySelector('.public-header nav');
+    if (publicNav && !document.getElementById('publicNavThemeBtn')) {
+        const btn = document.createElement('a');
+        btn.id = 'publicNavThemeBtn';
+        btn.href = 'javascript:void(0)';
+        btn.className = 'public-nav-theme-btn';
+        btn.onclick = toggleTheme;
+        btn.innerHTML = currentTheme === 'dark'
+            ? '<i class="fas fa-sun" style="color:#fbbf24;"></i> Chế độ sáng'
+            : '<i class="fas fa-moon"></i> Chế độ tối';
+        publicNav.appendChild(btn);
+    }
+
+    // Tự động thêm nút "Trang cá nhân" vào public header nếu người dùng đã đăng nhập
+    if (publicNav && !document.getElementById('publicNavUserBtn') && typeof auth !== 'undefined') {
+        auth.onAuthStateChanged(user => {
+            if (user && typeof db !== 'undefined') {
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    const role = doc.exists ? (doc.data().role || 'khachhang') : 'khachhang';
+                    const homeUrl = typeof getHomeUrlForRole === 'function' ? getHomeUrlForRole(role) : 'user/dashboard.html';
+                    let userBtn = document.getElementById('publicNavUserBtn');
+                    if (!userBtn) {
+                        userBtn = document.createElement('a');
+                        userBtn.id = 'publicNavUserBtn';
+                        userBtn.style.color = '#38bdf8';
+                        userBtn.style.fontWeight = '600';
+                        publicNav.insertBefore(userBtn, publicNav.firstChild);
+                    }
+                    userBtn.href = homeUrl;
+                    userBtn.innerHTML = '<i class="fas fa-user-circle"></i> Trang cá nhân';
+                }).catch(e => {});
+            }
+        });
+    }
+
+    // 3. Tự động tiêm nút Floating Theme Toggle vào góc dưới bên phải trang
+    if (!document.getElementById('floatingThemeToggle')) {
+        const floatBtn = document.createElement('button');
+        floatBtn.id = 'floatingThemeToggle';
+        floatBtn.type = 'button';
+        floatBtn.className = `floating-theme-toggle ${currentTheme === 'dark' ? 'is-dark' : ''}`;
+        floatBtn.onclick = toggleTheme;
+        floatBtn.setAttribute('title', currentTheme === 'dark' ? 'Chuyển sang Chế độ sáng' : 'Chuyển sang Chế độ tối');
+        floatBtn.setAttribute('aria-label', 'Chuyển đổi giao diện Sáng / Tối');
+        floatBtn.innerHTML = `
+            <i class="fas fa-moon icon-moon"></i>
+            <i class="fas fa-sun icon-sun"></i>
+        `;
+        document.body.appendChild(floatBtn);
+    }
+
+    updateThemeToggleUI(currentTheme);
+}
+
+// Đồng bộ theme giữa các tab nếu người dùng mở nhiều tab cùng lúc
+window.addEventListener('storage', (e) => {
+    if (e.key === 'techcare_theme') {
+        setTheme(e.newValue || 'light', false);
+    }
+});
+
+// Chạy khởi tạo ngay khi nạp file và khi DOM hoàn tất
+(function() {
+    // Áp dụng class lên HTML ngay tức khắc
+    try {
+        const t = localStorage.getItem('techcare_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch(e) {}
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTheme);
+    } else {
+        initTheme();
+    }
+})();

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phiếu Sửa Chữa & Duyệt Báo Giá - TechCare Pro</title>
@@ -8,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .quotation-action-box {
-            background: #fff8e1;
-            border: 2px solid #ffb300;
+            background: var(--warning-bg); color: var(--text);
+            border: 1.5px solid var(--warning);
             border-radius: 10px;
             padding: 16px;
             margin: 15px 0;
@@ -38,7 +39,7 @@
         }
         .st-step.completed .st-dot { background: #43a047; }
         .st-step.active .st-dot { background: #039be5; box-shadow: 0 0 0 4px rgba(3,155,229,0.2); }
-        .st-step .st-label { font-size: 0.75rem; color: #666; }
+        .st-step .st-label { font-size: 0.75rem; color: var(--text-light); }
         .st-step.active .st-label { color: #039be5; font-weight: bold; }
     </style>
 </head>
@@ -118,7 +119,7 @@
             <div class="modal-header">
                 <div>
                     <h3 id="mdTicketId" style="margin: 0; color: var(--primary);">TK-XXXXX</h3>
-                    <small id="mdCreatedAt" style="color: #666;"></small>
+                    <small id="mdCreatedAt" style="color: var(--text-light);"></small>
                 </div>
                 <button class="modal-close" onclick="closeDetailModal()">&times;</button>
             </div>
@@ -150,7 +151,7 @@
                             <span id="mdQuoteStatusBadge" class="badge badge-warning">Đang chờ bạn duyệt</span>
                         </div>
 
-                        <table style="width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; margin-bottom: 12px;">
+                        <table style="width: 100%; border-collapse: collapse; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 12px;">
                             <thead>
                                 <tr style="background: #fdf3d8;">
                                     <th style="padding: 8px 12px; font-size: 0.8rem;">Linh kiện / Dịch vụ thay thế</th>
@@ -206,6 +207,7 @@
     <!-- App Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/chatbot.js"></script>
 
     <script>
         let currentAuthUser = null;

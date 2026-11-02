@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đánh Giá Dịch Vụ Sửa Chữa - TechCare Pro</title>
@@ -11,34 +12,34 @@
         /* CSS Làm đẹp giao diện */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: var(--bg); color: var(--text);
         }
 
         .page-header {
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: linear-gradient(135deg, #ffffff, #f4f7f6);
+            background: var(--card-bg); border: 1px solid var(--border);
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
         
         .page-header h1 {
-            color: #2c3e50;
+            color: var(--text-heading);
             font-size: 1.8rem;
             margin-bottom: 10px;
         }
 
         .page-header p {
-            color: #7f8c8d;
+            color: var(--text-light);
             font-size: 1rem;
         }
 
         .card {
-            background: #ffffff;
+            background: var(--card-bg);
             border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-            border: none;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
             overflow: hidden;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -69,7 +70,7 @@
 
         .form-group label {
             font-weight: 600;
-            color: #34495e;
+            color: var(--text);
             margin-bottom: 8px;
             display: block;
         }
@@ -77,20 +78,20 @@
         select, textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
             border-radius: 8px;
             font-size: 0.95rem;
             font-family: inherit;
             transition: border-color 0.3s, box-shadow 0.3s;
             box-sizing: border-box;
-            background-color: #fcfcfc;
+            background-color: var(--input-bg); color: var(--text);
         }
 
         select:focus, textarea:focus {
             border-color: #007bff;
             outline: none;
             box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
-            background-color: #fff;
+            background-color: var(--input-bg);
         }
 
         .star-rating-box {
@@ -141,16 +142,14 @@
 
         /* Giao diện list danh sách Review */
         .review-item {
-            background: #fff;
-            border-left: 4px solid #ffc107;
+            background: var(--card-bg);
+            border-left: 4px solid var(--warning); color: var(--text);
             border-radius: 8px;
             padding: 18px;
             margin-bottom: 15px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.04);
             transition: box-shadow 0.3s ease;
-            border-top: 1px solid #f1f1f1;
-            border-right: 1px solid #f1f1f1;
-            border-bottom: 1px solid #f1f1f1;
+            border: 1px solid var(--border);
         }
 
         .review-item:hover {
@@ -173,7 +172,7 @@
         .review-comment {
             margin: 0;
             font-size: 0.95rem;
-            color: #444;
+            color: var(--text);
             line-height: 1.6;
             font-style: italic;
         }
@@ -292,6 +291,7 @@
     <!-- App Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/chatbot.js"></script>
 
     <script>
         let currentAuthUser = null;

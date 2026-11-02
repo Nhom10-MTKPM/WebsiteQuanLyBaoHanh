@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tra cứu tiến độ sửa chữa & Bảo hành - TechCare Pro</title>
@@ -9,156 +10,534 @@
     <!-- QR Scanner Library (US.15) -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
+        .tracking-hero {
+            text-align: center;
+            max-width: 680px;
+            margin: 0 auto 28px auto;
+        }
+        .tracking-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            background: var(--info-bg, rgba(2, 132, 199, 0.12));
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            border: 1px solid rgba(14, 165, 233, 0.25);
+        }
+        .tracking-hero h2 {
+            font-size: 1.85rem;
+            color: var(--text-heading) !important;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        .tracking-hero p {
+            color: var(--text-light) !important;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Main Tracking Card */
+        .tracking-card {
+            max-width: 640px;
+            margin: 0 auto;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 18px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+        .tracking-card-header {
+            padding: 16px 24px;
+            background: rgba(14, 165, 233, 0.05);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tracking-card-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-heading) !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+        .tracking-card-title i {
+            color: var(--accent);
+        }
+        .btn-qr-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--accent);
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-qr-toggle:hover {
+            background: var(--accent);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        .tracking-card-body {
+            padding: 26px 28px;
+        }
+
         #qrReader {
             width: 100%;
-            max-width: 400px;
-            margin: 0 auto 20px;
-            border-radius: 8px;
+            max-width: 360px;
+            margin: 0 auto 20px auto;
+            border-radius: 12px;
             overflow: hidden;
+            border: 2px dashed var(--accent);
             display: none;
         }
-        .status-tracker {
+
+        /* Form Controls */
+        .track-field {
+            margin-bottom: 18px;
+        }
+        .track-field label {
             display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin: 30px 0;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text) !important;
+            margin-bottom: 6px;
         }
-        .status-step {
-            text-align: center;
-            flex: 1;
-            position: relative;
-            z-index: 2;
+        .track-field label i {
+            color: var(--accent);
+            font-size: 0.85rem;
         }
-        .status-dot {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            color: #fff;
+        .track-input {
+            width: 100%;
+            height: 46px;
+            padding: 0 16px;
+            background: var(--input-bg) !important;
+            border: 1.5px solid var(--input-border) !important;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--text) !important;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .track-input:focus {
+            outline: none;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3.5px rgba(14, 165, 233, 0.16);
+        }
+        .track-input.ticket-code {
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .track-field-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted) !important;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Submit Button */
+        .btn-track-submit {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            color: #ffffff !important;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.96rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 8px;
+            gap: 8px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+            margin-top: 22px;
+        }
+        .btn-track-submit:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+        }
+        .btn-track-submit:active {
+            transform: translateY(0);
+        }
+
+        .sample-hint-box {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted) !important;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border);
+        }
+        .sample-hint-box a {
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Result Section */
+        .tracking-result-box {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        .result-ticket-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 14px 18px;
+            background: var(--bg) !important;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .result-ticket-info small {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light) !important;
+            font-weight: 600;
+        }
+        .result-ticket-info h3 {
+            font-size: 1.35rem;
+            color: var(--accent) !important;
+            margin: 2px 0 0;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        /* Device Meta Grid */
+        .device-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        @media (max-width: 540px) {
+            .device-meta-grid { grid-template-columns: 1fr; }
+        }
+        .meta-item {
+            background: var(--bg) !important;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+        .meta-item.full-width {
+            grid-column: 1 / -1;
+        }
+        .meta-item .meta-lbl {
+            font-size: 0.73rem;
+            color: var(--text-light) !important;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 3px;
+        }
+        .meta-item .meta-lbl i {
+            color: var(--accent);
+        }
+        .meta-item .meta-val {
             font-size: 0.9rem;
-            transition: all 0.3s;
+            font-weight: 600;
+            color: var(--text-heading) !important;
         }
-        .status-step.completed .status-dot {
-            background: #43a047;
+
+        /* Visual Progress Stepper */
+        .stepper-container {
+            position: relative;
+            margin: 30px 0 25px 0;
+            padding: 0 10px;
         }
-        .status-step.active .status-dot {
-            background: #039be5;
-            box-shadow: 0 0 0 5px rgba(3,155,229,0.2);
+        .stepper-track-bg {
+            position: absolute;
+            top: 18px;
+            left: 30px;
+            right: 30px;
+            height: 4px;
+            background: var(--border);
+            z-index: 1;
+            border-radius: 2px;
         }
-        .status-step .step-title {
-            font-size: 0.78rem;
-            color: #666;
-            font-weight: 500;
+        .stepper-track-fill {
+            position: absolute;
+            top: 18px;
+            left: 30px;
+            height: 4px;
+            background: linear-gradient(90deg, #16a34a, #0284c7);
+            z-index: 1;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.4s ease;
         }
-        .status-step.active .step-title {
-            color: #039be5;
+        .stepper-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+        .stepper-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .stepper-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--card-bg) !important;
+            border: 3px solid var(--border);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .stepper-step.completed .stepper-dot {
+            background: #16a34a !important;
+            border-color: #16a34a !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2);
+        }
+        .stepper-step.active .stepper-dot {
+            background: #0284c7 !important;
+            border-color: #0284c7 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 5px rgba(2, 132, 199, 0.25);
+            animation: pulseActive 2s infinite;
+        }
+        @keyframes pulseActive {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.25); }
+            50% { box-shadow: 0 0 0 8px rgba(2, 132, 199, 0.1); }
+        }
+        .stepper-title {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: var(--text-light) !important;
+            text-align: center;
+            line-height: 1.25;
+        }
+        .stepper-step.active .stepper-title {
+            color: var(--accent) !important;
             font-weight: 700;
         }
-        .device-card-info {
-            background: #f8f9fa;
+        .stepper-step.completed .stepper-title {
+            color: var(--text) !important;
+        }
+
+        /* Diagnosis & Quote Boxes */
+        .info-card-box {
+            padding: 16px 18px;
+            border-radius: 12px;
+            margin-top: 16px;
+            border-left: 4px solid;
+        }
+        .info-card-box.diag {
+            background: var(--success-bg) !important;
+            border-left-color: var(--success) !important;
+        }
+        .info-card-box.quote {
+            background: var(--warning-bg) !important;
+            border-left-color: var(--warning) !important;
+        }
+        .info-card-box h5 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-card-box.diag h5 { color: var(--success) !important; }
+        .info-card-box.quote h5 { color: var(--warning) !important; }
+        .info-card-box p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: var(--text) !important;
+            line-height: 1.5;
+        }
+
+        /* Photo Cards */
+        .photo-card {
             border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--accent-dark);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            text-align: center;
+            background: var(--bg);
+            padding: 4px;
+        }
+        .photo-card img {
+            width: 105px;
+            height: 85px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+        .photo-card img:hover {
+            transform: scale(1.05);
+        }
+        .photo-card small {
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin-top: 4px;
+            display: block;
+            color: var(--text-light);
         }
     </style>
 </head>
 <body class="public-page">
 
     <header class="public-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
             <span style="font-size: 1.5rem;">💻🔧</span>
             <h1 style="margin: 0; font-size: 1.2rem;">TechCare Pro</h1>
-        </div>
-        <nav>
-            <a href="index.html"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+        </a>
+        <nav id="publicNav">
             <a href="services.html"><i class="fas fa-list-alt"></i> Bảng giá dịch vụ</a>
         </nav>
     </header>
 
     <div class="public-content">
-        <div class="page-title">
-            <h2>Tra Cứu Tiến Độ Phiếu Sửa Chữa & Bảo Hành</h2>
-            <p>Nhập Mã phiếu (Ticket ID) và Số điện thoại hoặc Quét mã QR in trên phiếu biên nhận để tra cứu nhanh </p>
+        <!-- Hero Header -->
+        <div class="tracking-hero">
+            <span class="tracking-badge"><i class="fas fa-shield-alt"></i> Cổng Tra Cứu Trực Tuyến 24/7</span>
+            <h2>Tra Cứu Tiến Độ Sửa Chữa & Bảo Hành</h2>
+            <p>Nhập Mã phiếu (Ticket ID) & Số điện thoại hoặc Quét mã QR in trên phiếu biên nhận để theo dõi quá trình xử lý theo thời gian thực</p>
         </div>
 
-        <div class="tracking-box">
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
-                <button type="button" id="btnToggleQR" class="btn-action primary" onclick="toggleQRScanner()" style="font-size: 0.85rem; padding: 6px 14px;">
+        <!-- Main Tracking Card -->
+        <div class="tracking-card">
+            <div class="tracking-card-header">
+                <div class="tracking-card-title">
+                    <i class="fas fa-search"></i> Thông tin tra cứu phiếu
+                </div>
+                <button type="button" id="btnToggleQR" class="btn-qr-toggle" onclick="toggleQRScanner()">
                     <i class="fas fa-qrcode"></i> <span id="qrBtnText">Quét mã QR từ camera</span>
                 </button>
             </div>
 
-            <!-- QR Reader Container (US.15) -->
-            <div id="qrReader"></div>
+            <div class="tracking-card-body">
+                <!-- QR Reader Container (US.15) -->
+                <div id="qrReader"></div>
 
-            <form id="trackingForm" onsubmit="handleTrackTicket(event)">
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label for="trackTicketId"><i class="fas fa-ticket-alt"></i> Mã phiếu sửa chữa (Ticket ID)</label>
-                    <input type="text" id="trackTicketId" placeholder="vd: TK-20261020-001" required style="width:100%; padding:10px 14px; border:2px solid var(--border); border-radius:8px; text-transform:uppercase;">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="trackPhone"><i class="fas fa-phone"></i> Số điện thoại người mang máy đến</label>
-                    <input type="tel" id="trackPhone" placeholder="vd: 0912345678" required style="width:100%; padding:10px 14px; border:2px solid var(--border); border-radius:8px;">
-                </div>
-
-                <button type="submit" id="btnTrack" class="btn-primary" style="width: 100%;">
-                    <i class="fas fa-search"></i> Kiểm tra tiến độ ngay
-                </button>
-            </form>
-
-            <div id="trackLoading" class="loading" style="display: none;">
-                <div class="spinner"></div>
-                <p>Đang tìm kiếm thông tin phiếu sửa chữa...</p>
-            </div>
-
-            <!-- Result Box -->
-            <div id="trackResult" class="tracking-result" style="display: none;">
-                <hr style="margin: 25px 0; border: none; border-top: 1px dashed #ccc;">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div>
-                        <span style="font-size: 0.8rem; color: #888;">Mã phiếu tiếp nhận</span>
-                        <h3 id="resTicketId" style="color: var(--primary); margin:0;">TK-XXXXX</h3>
+                <form id="trackingForm" onsubmit="handleTrackTicket(event)">
+                    <div class="track-field">
+                        <label for="trackTicketId"><i class="fas fa-ticket-alt"></i> Mã phiếu sửa chữa (Ticket ID) (*)</label>
+                        <input type="text" id="trackTicketId" class="track-input ticket-code" placeholder="vd: TK-20261028-001" required>
+                        <span class="track-field-hint">In ở góc trên phiếu biên nhận hoặc trong tin nhắn / email xác nhận</span>
                     </div>
-                    <div id="resBadge"></div>
+
+                    <div class="track-field">
+                        <label for="trackPhone"><i class="fas fa-phone-alt"></i> Số điện thoại người gửi máy (*)</label>
+                        <input type="tel" id="trackPhone" class="track-input" placeholder="vd: 0912 345 678" required>
+                        <span class="track-field-hint">Số điện thoại đã cung cấp cho nhân viên khi tiếp nhận máy</span>
+                    </div>
+
+                    <button type="submit" id="btnTrack" class="btn-track-submit">
+                        <i class="fas fa-search"></i> Kiểm Tra Tiến Độ Ngay
+                    </button>
+                </form>
+
+                <div class="sample-hint-box">
+                    💡 Chưa có mã thử nghiệm? <a href="javascript:void(0)" onclick="fillSampleTicket()">Bấm vào đây để điền phiếu mẫu</a>
                 </div>
 
-                <div class="device-card-info">
-                    <p style="margin: 4px 0;"><strong><i class="fas fa-laptop"></i> Thiết bị:</strong> <span id="resDevice">Laptop Dell XPS 15</span></p>
-                    <p style="margin: 4px 0;"><strong><i class="fas fa-barcode"></i> Serial/IMEI:</strong> <span id="resSerial">SN-998231</span></p>
-                    <p style="margin: 4px 0;"><strong><i class="fas fa-exclamation-triangle"></i> Tình trạng báo lỗi:</strong> <span id="resIssue">Mất nguồn, không sạc được</span></p>
-                    <p style="margin: 4px 0;"><strong><i class="fas fa-user-cog"></i> KTV phụ trách:</strong> <span id="resKtv">KTV Trần Văn B</span></p>
-                    <p style="margin: 4px 0;"><strong><i class="far fa-calendar-alt"></i> Ngày tiếp nhận:</strong> <span id="resDate">---</span></p>
+                <div id="trackLoading" class="loading" style="display: none; padding: 30px 20px;">
+                    <div class="spinner"></div>
+                    <p style="margin: 0; font-weight: 500;">Đang truy vấn dữ liệu từ hệ thống TechCare Pro...</p>
                 </div>
 
-                <!-- Progress Tracker Visual -->
-                <h4 style="margin-bottom: 10px; font-size: 0.95rem;"><i class="fas fa-stream"></i> Tiến độ xử lý:</h4>
-                <div class="status-tracker" id="trackerSteps">
-                    <!-- Populated dynamically -->
-                </div>
+                <!-- Result Box -->
+                <div id="trackResult" class="tracking-result-box" style="display: none;">
+                    <div class="result-ticket-header">
+                        <div class="result-ticket-info">
+                            <small>Mã phiếu tiếp nhận</small>
+                            <h3 id="resTicketId">TK-XXXXX</h3>
+                        </div>
+                        <div id="resBadge"></div>
+                    </div>
 
-                <!-- Diagnosis & Quotation info if any -->
-                <div id="resDiagnosisBox" style="display: none; background: #e8f5e9; padding: 14px; border-radius: 8px; margin-top: 15px;">
-                    <h5 style="margin:0 0 6px 0; color: #1b5e20;"><i class="fas fa-stethoscope"></i> Kết quả chẩn đoán kỹ thuật:</h5>
-                    <p id="resDiagnosisText" style="margin: 0; font-size: 0.88rem; color: #2e7d32;"></p>
-                </div>
+                    <!-- Device Meta Grid -->
+                    <div class="device-meta-grid">
+                        <div class="meta-item">
+                            <div class="meta-lbl"><i class="fas fa-laptop"></i> Thiết bị sửa chữa</div>
+                            <div class="meta-val" id="resDevice">Laptop Dell XPS 15</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-lbl"><i class="fas fa-barcode"></i> Serial / IMEI</div>
+                            <div class="meta-val" id="resSerial">SN-998231</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-lbl"><i class="fas fa-user-cog"></i> KTV phụ trách</div>
+                            <div class="meta-val" id="resKtv">KTV Trần Văn B</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-lbl"><i class="far fa-calendar-alt"></i> Ngày tiếp nhận</div>
+                            <div class="meta-val" id="resDate">---</div>
+                        </div>
+                        <div class="meta-item full-width">
+                            <div class="meta-lbl"><i class="fas fa-exclamation-triangle"></i> Hiện trạng lỗi ban đầu</div>
+                            <div class="meta-val" id="resIssue" style="font-weight: 500; font-size: 0.88rem;">Mất nguồn, không sạc được</div>
+                        </div>
+                    </div>
 
-                <!-- Quotation Section -->
-                <div id="resQuotationBox" style="display: none; background: #fff3e0; padding: 14px; border-radius: 8px; margin-top: 15px;">
-                    <h5 style="margin:0 0 6px 0; color: #e65100;"><i class="fas fa-file-invoice-dollar"></i> Chi phí sửa chữa dự kiến:</h5>
-                    <p id="resQuotationText" style="margin: 0; font-size: 0.88rem; color: #b78103; font-weight: 600;"></p>
-                </div>
+                    <!-- Visual Progress Stepper -->
+                    <div style="margin-bottom: 8px;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-heading);"><i class="fas fa-stream"></i> Tiến độ quy trình xử lý:</span>
+                    </div>
 
-                <!-- Machine Images (US.30) -->
-                <div id="resImagesBox" style="display: none; margin-top: 15px;">
-                    <h5 style="margin-bottom: 8px;"><i class="fas fa-camera"></i> Hình ảnh tình trạng máy thực tế:</h5>
-                    <div id="resImagesGrid" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                    <div class="stepper-container">
+                        <div class="stepper-track-bg"></div>
+                        <div class="stepper-track-fill" id="stepperFill"></div>
+                        <div class="stepper-steps" id="trackerSteps">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Diagnosis Info -->
+                    <div id="resDiagnosisBox" class="info-card-box diag" style="display: none;">
+                        <h5><i class="fas fa-stethoscope"></i> Kết quả chẩn đoán kỹ thuật:</h5>
+                        <p id="resDiagnosisText"></p>
+                    </div>
+
+                    <!-- Quotation Section -->
+                    <div id="resQuotationBox" class="info-card-box quote" style="display: none;">
+                        <h5><i class="fas fa-file-invoice-dollar"></i> Chi phí sửa chữa & linh kiện thay thế:</h5>
+                        <p id="resQuotationText" style="font-weight: 600;"></p>
+                    </div>
+
+                    <!-- Machine Images (US.30) -->
+                    <div id="resImagesBox" style="display: none; margin-top: 18px;">
+                        <h5 style="margin: 0 0 10px 0; font-size: 0.88rem; color: var(--text-heading);"><i class="fas fa-camera"></i> Hình ảnh tình trạng máy thực tế:</h5>
+                        <div id="resImagesGrid" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -173,9 +552,28 @@
     <!-- App Scripts -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/chatbot.js"></script>
 
     <script>
         let html5QrcodeScanner = null;
+
+        // Điền mẫu thử nghiệm nhanh
+        async function fillSampleTicket() {
+            try {
+                // Thử lấy một phiếu thật có sẵn trong Firestore
+                const snap = await db.collection('tickets').limit(1).get();
+                if (!snap.empty) {
+                    const sample = snap.docs[0].data();
+                    document.getElementById('trackTicketId').value = sample.ticketId || 'TK-20261028-001';
+                    document.getElementById('trackPhone').value = sample.customerPhone || '0901234567';
+                    showToast('Đã điền thông tin phiếu mẫu!', 'info', 1800);
+                    return;
+                }
+            } catch(e) {}
+            document.getElementById('trackTicketId').value = 'TK-20261028-001';
+            document.getElementById('trackPhone').value = '0901234567';
+            showToast('Đã điền thông tin phiếu mẫu!', 'info', 1800);
+        }
 
         // Toggle QR scanner (US.15)
         function toggleQRScanner() {
@@ -191,7 +589,6 @@
                     { facingMode: "environment" },
                     { fps: 10, qrbox: 250 },
                     (decodedText) => {
-                        // QR format can be Ticket ID directly or URL containing ticketId
                         let tId = decodedText;
                         if (decodedText.includes('ticketId=')) {
                             const urlParams = new URLSearchParams(decodedText.split('?')[1]);
@@ -200,16 +597,13 @@
                         document.getElementById('trackTicketId').value = tId.trim();
                         showToast(`Đã quét mã: ${tId}`, 'success');
                         stopScanner();
-                        // Prompt to enter phone or auto-submit if phone filled
                         if (document.getElementById('trackPhone').value) {
                             handleTrackTicket(new Event('submit'));
                         } else {
                             document.getElementById('trackPhone').focus();
                         }
                     },
-                    (error) => {
-                        // QR scan frame error ignored
-                    }
+                    (error) => {}
                 ).catch(err => {
                     console.error('Camera error:', err);
                     showToast('Không thể mở camera. Vui lòng cho phép quyền truy cập camera!', 'error');
@@ -272,7 +666,6 @@
             resultBox.style.display = 'none';
 
             try {
-                // Query ticket by ticketId in Firestore
                 const querySnapshot = await db.collection('tickets').where('ticketId', '==', ticketId).get();
 
                 if (querySnapshot.empty) {
@@ -286,7 +679,6 @@
                     ticket = { id: doc.id, ...doc.data() };
                 });
 
-                // Verify phone matches (security check US.14)
                 const storedPhone = (ticket.customerPhone || '').replace(/\D/g, '');
                 const enteredPhone = phone.replace(/\D/g, '');
 
@@ -327,6 +719,13 @@
                 else if (t.status === 'da_huy') currentIdx = 0;
             }
 
+            // Fill line percentage
+            const fillBar = document.getElementById('stepperFill');
+            if (fillBar) {
+                const pct = currentIdx > 0 ? (currentIdx / (statusSequence.length - 1)) * 100 : 0;
+                fillBar.style.width = pct + '%';
+            }
+
             statusSequence.forEach((step, idx) => {
                 let stateClass = '';
                 let icon = idx + 1;
@@ -339,9 +738,9 @@
                 }
 
                 trackerDiv.innerHTML += `
-                    <div class="status-step ${stateClass}">
-                        <div class="status-dot">${icon}</div>
-                        <div class="step-title">${step.label}</div>
+                    <div class="stepper-step ${stateClass}">
+                        <div class="stepper-dot">${icon}</div>
+                        <div class="stepper-title">${step.label}</div>
                     </div>
                 `;
             });
@@ -372,11 +771,21 @@
                 imgGrid.innerHTML = '';
                 const beforeImgs = t.images.before || [];
                 beforeImgs.forEach(url => {
-                    imgGrid.innerHTML += `<div style="text-align:center;"><img src="${url}" style="width:100px; height:80px; object-fit:cover; border-radius:6px; border:1px solid #ccc;"><br><small>Trước sửa</small></div>`;
+                    imgGrid.innerHTML += `
+                        <div class="photo-card">
+                            <img src="${url}" alt="Trước sửa">
+                            <small>Trước sửa</small>
+                        </div>
+                    `;
                 });
                 const afterImgs = t.images.after || [];
                 afterImgs.forEach(url => {
-                    imgGrid.innerHTML += `<div style="text-align:center;"><img src="${url}" style="width:100px; height:80px; object-fit:cover; border-radius:6px; border:1px solid #43a047;"><br><small style="color:#2e7d32; font-weight:600;">Sau sửa</small></div>`;
+                    imgGrid.innerHTML += `
+                        <div class="photo-card" style="border-color: #22c55e;">
+                            <img src="${url}" alt="Sau sửa">
+                            <small style="color: #16a34a; font-weight: 700;">Sau sửa</small>
+                        </div>
+                    `;
                 });
             } else {
                 imgBox.style.display = 'none';

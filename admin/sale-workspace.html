@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tra cứu Kho & Bán Hàng (Sale / Tiếp Nhận) - TechCare Pro</title>
@@ -112,7 +113,7 @@
                 </div>
                 <div class="form-group">
                     <label>Mẫu tin nhắn/kịch bản tư vấn nhanh:</label>
-                    <textarea id="consultScript" rows="4" readonly style="background: #fff;"></textarea>
+                    <textarea id="consultScript" rows="4" readonly style="background: var(--card-bg); color: var(--text); border-color: var(--border);"></textarea>
                 </div>
                 <button type="button" class="btn-action primary" onclick="copyConsultScript()"><i class="fas fa-copy"></i> Sao chép tin nhắn tư vấn</button>
             </div>
@@ -131,6 +132,7 @@
     <!-- App Scripts -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/chatbot.js"></script>
 
     <script>
         applyCachedUserInfo('sale-workspace');

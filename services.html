@@ -1,84 +1,786 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>if(localStorage.getItem('techcare_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Giá & Dịch Vụ Sửa Chữa PC - Laptop | TechCare Pro</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .service-badge {
+        /* ========================================================
+           SERVICES PAGE PREMIUM STYLES
+           ======================================================== */
+        
+        /* Hero Banner */
+        .services-hero {
+            background: linear-gradient(135deg, #091322 0%, #0f2744 55%, #0369a1 100%);
+            border-radius: 20px;
+            padding: 42px 32px 36px 32px;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.2);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .services-hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-top-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: rgba(14, 165, 233, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8 !important;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        .services-hero h1 {
+            color: #ffffff !important;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.5px;
+            line-height: 1.25;
+        }
+        .services-hero h1 span {
+            color: #38bdf8;
+        }
+        .services-hero p.hero-subtitle {
+            color: #e2e8f0 !important;
+            font-size: 1.02rem;
+            max-width: 760px;
+            margin: 0 0 28px 0;
+            line-height: 1.6;
+        }
+
+        /* Trust Grid */
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        @media (max-width: 900px) {
+            .trust-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 520px) {
+            .trust-grid { grid-template-columns: 1fr; }
+            .services-hero { padding: 26px 18px; }
+            .services-hero h1 { font-size: 1.65rem; }
+        }
+        .trust-item {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        .trust-item:hover {
+            background: rgba(255, 255, 255, 0.14);
+            transform: translateY(-2px);
+        }
+        .trust-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .trust-text h4 {
+            margin: 0;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff !important;
+        }
+        .trust-text small {
+            color: #cbd5e1 !important;
+            font-size: 0.76rem;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Search & Filter Section */
+        .catalog-controls-card {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 18px;
+            padding: 20px 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+        .search-inputs-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-field-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+        .search-field-wrap i.search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+        .catalog-search-input {
+            width: 100%;
+            height: 46px;
+            padding: 0 40px 0 42px !important;
+            background: var(--input-bg) !important;
+            border: 1.5px solid var(--input-border) !important;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            color: var(--text) !important;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .catalog-search-input:focus {
+            outline: none;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3.5px rgba(14, 165, 233, 0.16);
+        }
+        .btn-clear-search {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: none;
+            padding: 4px;
+        }
+        .btn-clear-search:hover {
+            color: var(--danger);
+        }
+        .catalog-select {
+            height: 46px;
+            padding: 0 16px;
+            background: var(--input-bg) !important;
+            border: 1.5px solid var(--input-border) !important;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text) !important;
+            cursor: pointer;
+            min-width: 190px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+        .catalog-select:focus {
+            outline: none;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3.5px rgba(14, 165, 233, 0.16);
+        }
+
+        /* Filter Pills */
+        .filter-pills-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-top: 14px;
+            margin-top: 14px;
+            border-top: 1px dashed var(--border);
+            scrollbar-width: thin;
+        }
+        .filter-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .filter-pill:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .filter-pill.active {
+            background: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: #ffffff !important;
+            box-shadow: 0 3px 10px rgba(14, 165, 233, 0.35);
+        }
+
+        /* Results Info Bar */
+        .catalog-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 0 4px;
+        }
+        .results-counter {
+            font-size: 0.88rem;
+            color: var(--text-light);
+        }
+        .results-counter strong {
+            color: var(--text-heading);
+            font-weight: 700;
+        }
+
+        /* Service Cards Grid */
+        .services-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 22px;
+        }
+        @media (max-width: 480px) {
+            .services-card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Individual Modern Service Card */
+        .service-card-item {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .service-card-item:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent) !important;
+            box-shadow: 0 12px 28px rgba(14, 165, 233, 0.16);
+        }
+
+        /* Card Top Badges */
+        .card-header-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .cat-tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .cat-tag-bao_duong { background: rgba(2, 132, 199, 0.12); color: #0284c7; }
+        .cat-tag-phan_mem { background: rgba(147, 51, 234, 0.12); color: #9333ea; }
+        .cat-tag-phan_cung { background: rgba(234, 88, 12, 0.12); color: #ea580c; }
+        .cat-tag-nang_cap { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+        .cat-tag-linh_kien { background: rgba(13, 148, 136, 0.12); color: #0d9488; }
+
+        .warranty-tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 4px;
+            font-weight: 600;
+            color: #16a34a;
+            background: rgba(22, 163, 74, 0.08);
+            border: 1px solid rgba(22, 163, 74, 0.2);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Card Typography */
+        .service-name {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text-heading) !important;
+            margin: 0 0 8px 0;
+            line-height: 1.35;
+        }
+        .service-desc {
+            font-size: 0.88rem;
+            color: var(--text-light) !important;
+            line-height: 1.5;
+            margin: 0 0 16px 0;
+            flex-grow: 1;
+        }
+
+        /* Chips */
+        .service-chips-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .service-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            color: var(--text-light);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+        .service-chip i {
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Card Footer & Price */
+        .service-card-footer {
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .price-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
             font-weight: 600;
         }
-        .hero-banner {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            padding: 40px 20px;
-            text-align: center;
-            border-radius: 12px;
-            margin-bottom: 30px;
+        .price-highlight {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #0284c7;
+            letter-spacing: -0.2px;
         }
-        .hero-banner h1 {
-            color: #4fc3f7;
-            font-size: 2rem;
-            margin-bottom: 10px;
+        [data-theme="dark"] .price-highlight {
+            color: #38bdf8;
+        }
+
+        /* CTA Book Button */
+        .btn-book-service {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+            color: #ffffff !important;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 10px rgba(14, 165, 233, 0.28);
+        }
+        .btn-book-service:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 5px 16px rgba(14, 165, 233, 0.4);
+        }
+        .btn-book-service:active {
+            transform: translateY(0);
+        }
+
+        /* Consultation CTA Box */
+        .consultation-cta-card {
+            margin-top: 40px;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 20px;
+            padding: 34px 30px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+        }
+        .consultation-cta-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(180deg, #0284c7, #38bdf8);
+        }
+        .cta-content-left h3 {
+            font-size: 1.25rem;
+            color: var(--text-heading) !important;
+            margin: 0 0 8px 0;
+            font-weight: 800;
+        }
+        .cta-content-left p {
+            color: var(--text-light) !important;
+            margin: 0;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+        .cta-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-cta-phone {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 12px;
+            background: #16a34a;
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            transition: all 0.2s ease;
+        }
+        .btn-cta-phone:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+        }
+        .btn-cta-register {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+            transition: all 0.2s ease;
+        }
+        .btn-cta-register:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Booking Modal */
+        .booking-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+        }
+        .booking-modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .booking-modal-box {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 18px;
+            max-width: 520px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px) scale(0.98);
+            transition: all 0.25s ease;
+        }
+        .booking-modal-overlay.open .booking-modal-box {
+            transform: translateY(0) scale(1);
+        }
+        .booking-modal-header {
+            padding: 18px 24px;
+            background: rgba(14, 165, 233, 0.06);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .booking-modal-header h4 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-heading) !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-close-modal {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+        .btn-close-modal:hover { color: var(--danger); }
+        .booking-modal-body {
+            padding: 24px;
+        }
+        .selected-service-summary {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .selected-service-summary strong {
+            font-size: 0.95rem;
+            color: var(--text-heading);
+            display: block;
+        }
+        .selected-service-summary span {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--accent);
         }
     </style>
 </head>
 <body class="public-page">
 
     <header class="public-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
             <span style="font-size: 1.5rem;">💻🔧</span>
             <h1 style="margin: 0; font-size: 1.2rem;">TechCare Pro</h1>
-        </div>
-        <nav>
-            <a href="index.html"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
-            <a href="register.html" style="color: var(--accent); font-weight: 600;"><i class="fas fa-user-plus"></i> Đăng ký</a>
+        </a>
+        <nav id="publicNav">
             <a href="tracking.html"><i class="fas fa-search"></i> Tra cứu tiến độ</a>
         </nav>
     </header>
 
     <div class="public-content">
-        <div class="hero-banner">
-            <h1>Bảng Giá Dịch Vụ Sửa Chữa & Linh Kiện PC - Laptop</h1>
-            <p>Cam kết linh kiện chính hãng 100%, bảo hành từ 6 đến 36 tháng, báo giá minh bạch trước khi làm</p>
+        <!-- Hero Banner with High Contrast & Trust Badges -->
+        <div class="services-hero">
+            <span class="hero-top-badge"><i class="fas fa-certificate"></i> Bảng Giá Niêm Yết Minh Bạch - Linh Kiện Chính Hãng</span>
+            <h1>Bảng Giá Dịch Vụ Sửa Chữa & Nâng Cấp <span>PC - Laptop</span></h1>
+            <p class="hero-subtitle">Cam kết linh kiện chính hãng 100%, bảo hành 1 đổi 1 từ 6 đến 36 tháng, miễn phí kiểm tra bệnh máy và báo giá chuẩn xác trước khi tiến hành sửa chữa.</p>
+            
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="trust-text">
+                        <h4>Lấy liền 30 - 60 phút</h4>
+                        <small>Xem trực tiếp quá trình sửa</small>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="trust-text">
+                        <h4>Bảo hành tới 36 tháng</h4>
+                        <small>Đổi mới linh kiện uy tín</small>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-stethoscope"></i></div>
+                    <div class="trust-text">
+                        <h4>Miễn phí kiểm tra 100%</h4>
+                        <small>Không sửa không mất tiền</small>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                    <div class="trust-text">
+                        <h4>Báo giá minh bạch</h4>
+                        <small>Không phát sinh chi phí ẩn</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Search & Filter Controls (US.04) -->
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Tìm kiếm dịch vụ, linh kiện (vd: Thay màn hình, Cài win, RAM, SSD, Vệ sinh...)" oninput="filterServices()">
-            <select id="categoryFilter" onchange="filterServices()">
-                <option value="all">Tất cả danh mục</option>
-                <option value="phan_cung">Sửa chữa phần cứng</option>
-                <option value="phan_mem">Cài đặt phần mềm & OS</option>
-                <option value="nang_cap">Nâng cấp PC / Laptop</option>
-                <option value="bao_duong">Vệ sinh & Bảo dưỡng tản nhiệt</option>
-                <option value="linh_kien">Linh kiện thay thế chính hãng</option>
-            </select>
+        <!-- Search & Filter Controls Card -->
+        <div class="catalog-controls-card">
+            <div class="search-inputs-row">
+                <div class="search-field-wrap">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="catalog-search-input" placeholder="Tìm dịch vụ: Thay màn hình, Cài Win, Vệ sinh, Pin, RAM, SSD..." oninput="handleSearchInput()">
+                    <button type="button" id="btnClearSearch" class="btn-clear-search" onclick="clearSearch()" title="Xóa tìm kiếm">
+                        <i class="fas fa-times-circle"></i>
+                    </button>
+                </div>
+
+                <select id="categoryFilter" class="catalog-select" onchange="filterServices()">
+                    <option value="all">📂 Tất cả danh mục</option>
+                    <option value="bao_duong">🧼 Vệ sinh & Bảo dưỡng</option>
+                    <option value="phan_mem">💻 Cài đặt phần mềm & OS</option>
+                    <option value="phan_cung">⚙️ Sửa chữa phần cứng</option>
+                    <option value="nang_cap">⚡ Nâng cấp PC / Laptop</option>
+                    <option value="linh_kien">🔋 Linh kiện thay thế Zin</option>
+                </select>
+
+                <select id="sortFilter" class="catalog-select" onchange="filterServices()" style="min-width: 170px;">
+                    <option value="default">↕️ Sắp xếp mặc định</option>
+                    <option value="price_asc">💵 Giá tăng dần</option>
+                    <option value="price_desc">💎 Giá giảm dần</option>
+                    <option value="name_asc">🔤 Tên dịch vụ (A - Z)</option>
+                </select>
+            </div>
+
+            <!-- Quick Filter Pill Tabs -->
+            <div class="filter-pills-row">
+                <button type="button" class="filter-pill active" data-category="all" onclick="selectPill('all')">
+                    <i class="fas fa-th-large"></i> Tất cả (<span id="countAll">0</span>)
+                </button>
+                <button type="button" class="filter-pill" data-category="bao_duong" onclick="selectPill('bao_duong')">
+                    <i class="fas fa-broom"></i> Vệ sinh máy
+                </button>
+                <button type="button" class="filter-pill" data-category="phan_mem" onclick="selectPill('phan_mem')">
+                    <i class="fab fa-windows"></i> Cài Win & App
+                </button>
+                <button type="button" class="filter-pill" data-category="phan_cung" onclick="selectPill('phan_cung')">
+                    <i class="fas fa-microchip"></i> Sửa phần cứng
+                </button>
+                <button type="button" class="filter-pill" data-category="nang_cap" onclick="selectPill('nang_cap')">
+                    <i class="fas fa-bolt"></i> Nâng cấp RAM/SSD
+                </button>
+                <button type="button" class="filter-pill" data-category="linh_kien" onclick="selectPill('linh_kien')">
+                    <i class="fas fa-battery-full"></i> Pin & Phụ kiện
+                </button>
+            </div>
         </div>
 
-        <div id="loading" class="loading">
+        <!-- Meta count bar -->
+        <div class="catalog-meta-bar">
+            <div class="results-counter">
+                Hiển thị <strong id="resultCount">0</strong> dịch vụ phù hợp
+            </div>
+        </div>
+
+        <!-- Loading spinner -->
+        <div id="loading" class="loading" style="padding: 40px 20px;">
             <div class="spinner"></div>
-            <p>Đang tải danh mục dịch vụ từ hệ thống...</p>
+            <p style="margin: 0; font-weight: 500;">Đang tải danh mục dịch vụ từ TechCare Pro...</p>
         </div>
 
-        <div id="servicesGrid" class="cards-grid" style="display: none;"></div>
+        <!-- Service Cards Grid -->
+        <div id="servicesGrid" class="services-card-grid" style="display: none;"></div>
 
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <span class="icon">🔍</span>
-            <p>Không tìm thấy dịch vụ hoặc linh kiện nào phù hợp!</p>
+        <!-- Empty state -->
+        <div id="emptyState" class="empty-state" style="display: none; padding: 50px 20px; text-align: center;">
+            <span class="icon" style="font-size: 3rem; margin-bottom: 12px; display: block;">🔍</span>
+            <h4 style="margin: 0 0 6px 0; font-size: 1.15rem; color: var(--text-heading);">Không tìm thấy dịch vụ hoặc linh kiện phù hợp!</h4>
+            <p style="color: var(--text-light); margin: 0 0 16px 0;">Hãy thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc.</p>
+            <button type="button" class="btn-primary" onclick="resetAllFilters()" style="padding: 8px 20px; border-radius: 8px;">
+                <i class="fas fa-redo"></i> Đặt lại bộ lọc
+            </button>
         </div>
 
-        <div style="margin-top: 40px; text-align: center; background: #fff; padding: 30px; border-radius: 12px; box-shadow: var(--shadow);">
-            <h3>Bạn cần tư vấn hoặc muốn đặt lịch kiểm tra ngay?</h3>
-            <p style="color: var(--text-light); margin: 10px 0 20px;">Đăng ký tài khoản để gửi yêu cầu đặt lịch hẹn, được ưu tiên tiếp nhận không phải chờ đợi!</p>
-            <a href="register.html" class="btn-action primary" style="font-size: 1rem; padding: 12px 28px;">
-                <i class="fas fa-calendar-check"></i> Đặt lịch hẹn sửa chữa ngay
-            </a>
+        <!-- Consultation & Hotline CTA Box -->
+        <div class="consultation-cta-card">
+            <div class="cta-content-left">
+                <h3>Bạn chưa biết máy mình đang bị lỗi gì hoặc cần kiểm tra gấp?</h3>
+                <p>Đội ngũ Kỹ thuật viên TechCare Pro luôn sẵn sàng tư vấn giải pháp tiết kiệm nhất và hỗ trợ kiểm tra lỗi máy hoàn toàn miễn phí!</p>
+            </div>
+            <div class="cta-actions-right">
+                <a href="tel:0912345678" class="btn-cta-phone">
+                    <i class="fas fa-phone-alt"></i> Hotline: 0912.345.678
+                </a>
+                <a href="register.html" class="btn-cta-register">
+                    <i class="fas fa-calendar-check"></i> Đặt lịch hẹn online
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Booking Modal (US feature) -->
+    <div id="bookingModal" class="booking-modal-overlay" onclick="closeBookingModal(event)">
+        <div class="booking-modal-box" onclick="event.stopPropagation()">
+            <div class="booking-modal-header">
+                <h4><i class="fas fa-calendar-plus" style="color: var(--accent);"></i> Đặt Lịch Hẹn Dịch Vụ</h4>
+                <button type="button" class="btn-close-modal" onclick="closeBookingModal()">&times;</button>
+            </div>
+            <div class="booking-modal-body">
+                <div class="selected-service-summary">
+                    <div>
+                        <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Dịch vụ đã chọn</small>
+                        <strong id="modalServiceName">Vệ sinh & Thay keo tản nhiệt</strong>
+                    </div>
+                    <span id="modalServicePrice">150.000 đ</span>
+                </div>
+
+                <form id="quickBookingForm" onsubmit="submitQuickBooking(event)">
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Họ tên khách hàng (*)</label>
+                        <input type="text" id="bookCustName" required placeholder="vd: Nguyễn Văn A" style="width:100%; height:42px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); padding:0 12px; box-sizing:border-box;">
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Số điện thoại liên hệ (*)</label>
+                        <input type="tel" id="bookCustPhone" required placeholder="vd: 0912 345 678" style="width:100%; height:42px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); padding:0 12px; box-sizing:border-box;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                        <div>
+                            <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Dòng máy / Model</label>
+                            <input type="text" id="bookDeviceModel" placeholder="vd: Dell XPS 15, Asus TUF..." style="width:100%; height:42px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); padding:0 12px; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Ngày hẹn mang máy</label>
+                            <input type="date" id="bookApptDate" required style="width:100%; height:42px; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); padding:0 12px; box-sizing:border-box;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 5px;">Ghi chú thêm về lỗi (nếu có)</label>
+                        <textarea id="bookNotes" rows="2" placeholder="vd: Máy bị nóng quạt kêu to, cần lấy trong chiều..." style="width:100%; border-radius:8px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); padding:8px 12px; box-sizing:border-box; font-family:inherit; font-size:0.88rem;"></textarea>
+                    </div>
+
+                    <button type="submit" id="btnSubmitBooking" style="width:100%; height:46px; border-radius:10px; border:none; background:linear-gradient(135deg, #0284c7, #0ea5e9); color:#fff; font-weight:700; font-size:0.95rem; cursor:pointer; box-shadow:0 4px 14px rgba(14, 165, 233, 0.35);">
+                        <i class="fas fa-check-circle"></i> Xác Nhận Đặt Lịch Hẹn
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -91,15 +793,16 @@
     <!-- App Scripts -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/chatbot.js"></script>
 
     <script>
-        // Sample default catalog data in case Firestore collection is empty yet
+        // Catalog default data with enriched details and icons
         const defaultServices = [
             {
                 name: "Vệ sinh & Thay keo tản nhiệt Laptop cao cấp",
                 category: "bao_duong",
                 categoryName: "Vệ sinh & Bảo dưỡng",
-                description: "Làm sạch bụi quạt, tra keo tản nhiệt MX-4/Kryonaut, giảm 15-20°C nhiệt độ CPU/GPU.",
+                description: "Làm sạch bụi quạt tản nhiệt, tra keo tản nhiệt gốm cao cấp MX-4/Kryonaut, giúp hạ 15-20°C nhiệt độ CPU & GPU ngay tức thì.",
                 price: 150000,
                 estimatedTime: "45 - 60 phút",
                 warranty: "1 tháng"
@@ -108,34 +811,34 @@
                 name: "Cài đặt Windows 10/11 & Bộ phần mềm văn phòng đầy đủ",
                 category: "phan_mem",
                 categoryName: "Cài đặt phần mềm & OS",
-                description: "Cài Windows bản quyền, Office, PDF, Antivirus, Driver đầy đủ, tối ưu hóa tốc độ khởi động.",
+                description: "Cài Windows bản quyền chuẩn UEFI, đầy đủ Office, PDF, Antivirus, Unikey, giải nén và bộ Driver chuẩn nhất theo máy.",
                 price: 120000,
-                estimatedTime: "60 phút",
+                estimatedTime: "45 - 60 phút",
                 warranty: "Hỗ trợ trọn đời"
             },
             {
                 name: "Thay Màn hình Laptop Full HD IPS 14 inch / 15.6 inch",
                 category: "phan_cung",
                 categoryName: "Sửa chữa phần cứng",
-                description: "Màn hình IPS sắc nét, chống chói, tần số 60Hz - 144Hz cho các dòng Dell, HP, Asus, Lenovo, Acer.",
+                description: "Màn hình IPS sắc nét, góc nhìn rộng, chống chói cao cấp, tần số quét 60Hz - 144Hz cho Dell, HP, Asus, Acer, Lenovo.",
                 price: 1450000,
                 estimatedTime: "1 - 2 giờ",
                 warranty: "12 tháng đổi mới"
             },
             {
-                name: "Thay Bàn phím Laptop các dòng phổ thông",
+                name: "Thay Bàn phím Laptop các dòng phổ thông & Gaming",
                 category: "phan_cung",
                 categoryName: "Sửa chữa phần cứng",
-                description: "Khắc phục liệt phím, chập phím, bung nút. Linh kiện chính hãng độ nảy tốt.",
+                description: "Khắc phục triệt để lỗi liệt phím, chập phím, bung nút, loạn phím. Linh kiện chính hãng độ nảy êm tay chuẩn xác.",
                 price: 350000,
-                estimatedTime: "45 phút",
+                estimatedTime: "30 - 45 phút",
                 warranty: "12 tháng"
             },
             {
                 name: "Nâng cấp SSD NVMe PCIe 512GB Kingston / Samsung",
                 category: "nang_cap",
                 categoryName: "Nâng cấp PC / Laptop",
-                description: "Tốc độ đọc ghi lên tới 3500MB/s, miễn phí sao lưu dữ liệu và cài lại hệ điều hành.",
+                description: "Tốc độ đọc ghi cực nhanh lên tới 3500MB/s, khởi động máy chỉ 5 giây. Miễn phí sao chép dữ liệu và cài lại hệ điều hành.",
                 price: 890000,
                 estimatedTime: "30 - 45 phút",
                 warranty: "36 tháng"
@@ -144,32 +847,61 @@
                 name: "Nâng cấp RAM DDR4 8GB / 16GB Bus 3200MHz",
                 category: "nang_cap",
                 categoryName: "Nâng cấp PC / Laptop",
-                description: "Tăng khả năng đa nhiệm, chạy mượt đồ họa, Photoshop, Premiere, CAD.",
+                description: "Gấp đôi dung lượng đa nhiệm, mở hàng chục tab Chrome mượt mà, render đồ họa Photoshop, Premiere, CAD không lo tràn RAM.",
                 price: 550000,
                 estimatedTime: "20 phút",
                 warranty: "36 tháng"
             },
             {
-                name: "Sửa nguồn Mainboard Laptop (Không lên nguồn, chập cháy)",
+                name: "Sửa nguồn Mainboard Laptop (Mất nguồn, chập cháy, vô nước)",
                 category: "phan_cung",
                 categoryName: "Sửa chữa phần cứng",
-                description: "Đo đạc, đóng chip, thay IC nguồn, sửa mạch sạc chuyên sâu bằng máy đóng chip BGA.",
+                description: "Đo đạc sơ đồ schematic chuyên sâu, thay IC nguồn, làm chân chipset bằng máy hàn BGA tự động hiện đại chuẩn phòng sạch.",
                 price: 650000,
                 estimatedTime: "1 - 2 ngày",
                 warranty: "3 tháng"
             },
             {
-                name: "Thay Pin Laptop chính hãng (Chai pin, phồng pin)",
+                name: "Thay Pin Laptop chính hãng (Chai pin, phồng pin, sập nguồn)",
                 category: "linh_kien",
-                categoryName: "Linh kiện thay thế chính hãng",
-                description: "Pin chuẩn Zin dung lượng cao cho Dell, Asus, HP, Lenovo, Macbook.",
+                categoryName: "Linh kiện thay thế Zin",
+                description: "Pin chuẩn Zin dung lượng cao cho Dell, Asus, HP, Lenovo, Acer, MacBook. Chống phù nổ an toàn tuyệt đối.",
                 price: 650000,
                 estimatedTime: "30 phút",
                 warranty: "12 tháng"
+            },
+            {
+                name: "Cứu dữ liệu ổ cứng HDD / SSD bị hỏng cơ, format nhầm",
+                category: "phan_mem",
+                categoryName: "Cài đặt phần mềm & OS",
+                description: "Phục hồi dữ liệu hình ảnh, video, tài liệu quan trọng trên ổ cứng bị bad sector, mất phân vùng hoặc nhận chập chờn.",
+                price: 450000,
+                estimatedTime: "1 - 3 ngày",
+                warranty: "Bảo mật 100%"
+            },
+            {
+                name: "Hàn & Phục hồi Bản lề Laptop bị gãy vỡ, bung vỏ",
+                category: "phan_cung",
+                categoryName: "Sửa chữa phần cứng",
+                description: "Gia cố trụ chân ốc đồng chịu lực cao cấp, nắn khớp gập êm ái, đảm bảo thẩm mỹ như nguyên bản không cần thay cả bộ vỏ.",
+                price: 250000,
+                estimatedTime: "2 - 4 giờ",
+                warranty: "6 tháng"
             }
         ];
 
         let loadedServices = [];
+        let activePillCategory = 'all';
+
+        // Khởi tạo ngày hẹn mặc định là ngày hôm nay
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('bookApptDate');
+            if (dateInput) {
+                dateInput.value = today;
+                dateInput.min = today;
+            }
+        });
 
         async function fetchServices() {
             try {
@@ -180,22 +912,47 @@
                         loadedServices.push({ id: doc.id, ...doc.data() });
                     });
                 } else {
-                    // Seed initial data or fallback to defaults
                     loadedServices = [...defaultServices];
                 }
             } catch (err) {
-                console.warn('Using default catalog:', err);
+                console.warn('Fallback to default catalog:', err);
                 loadedServices = [...defaultServices];
             }
-            renderServices(loadedServices);
+
+            document.getElementById('countAll').textContent = loadedServices.length;
+            filterServices();
+        }
+
+        function getCategoryBadgeClass(cat) {
+            switch(cat) {
+                case 'bao_duong': return 'cat-tag-bao_duong';
+                case 'phan_mem': return 'cat-tag-phan_mem';
+                case 'phan_cung': return 'cat-tag-phan_cung';
+                case 'nang_cap': return 'cat-tag-nang_cap';
+                case 'linh_kien': return 'cat-tag-linh_kien';
+                default: return 'cat-tag-bao_duong';
+            }
+        }
+
+        function getCategoryIcon(cat) {
+            switch(cat) {
+                case 'bao_duong': return '<i class="fas fa-broom"></i>';
+                case 'phan_mem': return '<i class="fab fa-windows"></i>';
+                case 'phan_cung': return '<i class="fas fa-microchip"></i>';
+                case 'nang_cap': return '<i class="fas fa-bolt"></i>';
+                case 'linh_kien': return '<i class="fas fa-battery-full"></i>';
+                default: return '<i class="fas fa-tools"></i>';
+            }
         }
 
         function renderServices(list) {
             const grid = document.getElementById('servicesGrid');
             const loading = document.getElementById('loading');
             const empty = document.getElementById('emptyState');
+            const resultCount = document.getElementById('resultCount');
 
             loading.style.display = 'none';
+            resultCount.textContent = list.length;
 
             if (list.length === 0) {
                 grid.style.display = 'none';
@@ -208,33 +965,206 @@
             grid.innerHTML = '';
 
             list.forEach(item => {
+                const catClass = getCategoryBadgeClass(item.category);
+                const catIcon = getCategoryIcon(item.category);
+                const warrantyHtml = item.warranty ? `
+                    <span class="warranty-tag-pill" title="Thời hạn bảo hành">
+                        <i class="fas fa-shield-alt"></i> ${item.warranty}
+                    </span>
+                ` : '';
+
                 grid.innerHTML += `
-                    <div class="service-card">
-                        <span class="card-category">${item.categoryName || item.category}</span>
-                        <h3>${item.name}</h3>
-                        <p>${item.description || 'Dịch vụ chuyên nghiệp chất lượng cao tại TechCare Pro.'}</p>
-                        <div class="price">${formatVND(item.price)}</div>
-                        <div class="time"><i class="far fa-clock"></i> Ước tính: ${item.estimatedTime || '30 - 60 phút'}</div>
-                        ${item.warranty ? `<div class="time" style="color:#2e7d32;"><i class="fas fa-shield-alt"></i> Bảo hành: ${item.warranty}</div>` : ''}
+                    <div class="service-card-item">
+                        <div>
+                            <div class="card-header-meta">
+                                <span class="cat-tag-pill ${catClass}">
+                                    ${catIcon} ${item.categoryName || item.category}
+                                </span>
+                                ${warrantyHtml}
+                            </div>
+
+                            <h3 class="service-name">${item.name}</h3>
+                            <p class="service-desc">${item.description || 'Dịch vụ chuẩn xác, linh kiện zin chất lượng cao từ đội ngũ KTV TechCare Pro.'}</p>
+
+                            <div class="service-chips-row">
+                                <div class="service-chip"><i class="far fa-clock"></i> ${item.estimatedTime || '30 - 60 phút'}</div>
+                                <div class="service-chip"><i class="fas fa-check-circle"></i> Miễn phí kiểm tra</div>
+                            </div>
+                        </div>
+
+                        <div class="service-card-footer">
+                            <div class="price-container">
+                                <span class="price-label">Giá trọn gói niêm yết:</span>
+                                <span class="price-highlight">${formatVND(item.price)}</span>
+                            </div>
+
+                            <button type="button" class="btn-book-service" onclick="openBookingModal('${escapeHtml(item.name)}', ${item.price})">
+                                <i class="fas fa-calendar-plus"></i> Đặt lịch hẹn
+                            </button>
+                        </div>
                     </div>
                 `;
             });
         }
 
+        function escapeHtml(text) {
+            return (text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function handleSearchInput() {
+            const val = document.getElementById('searchInput').value;
+            document.getElementById('btnClearSearch').style.display = val ? 'block' : 'none';
+            filterServices();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('btnClearSearch').style.display = 'none';
+            filterServices();
+        }
+
+        function selectPill(cat) {
+            activePillCategory = cat;
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-category') === cat);
+            });
+            document.getElementById('categoryFilter').value = cat;
+            filterServices();
+        }
+
         function filterServices() {
             const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-            const cat = document.getElementById('categoryFilter').value;
+            const catSelect = document.getElementById('categoryFilter').value;
+            const sortMode = document.getElementById('sortFilter').value;
 
-            const filtered = loadedServices.filter(item => {
+            // Đồng bộ giữa dropdown và pill
+            if (activePillCategory !== catSelect && catSelect !== 'all') {
+                activePillCategory = catSelect;
+                document.querySelectorAll('.filter-pill').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-category') === catSelect);
+                });
+            } else if (catSelect === 'all' && activePillCategory !== 'all') {
+                document.querySelectorAll('.filter-pill').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('data-category') === activePillCategory);
+                });
+            }
+
+            const targetCategory = catSelect !== 'all' ? catSelect : activePillCategory;
+
+            let filtered = loadedServices.filter(item => {
                 const matchesKeyword = item.name.toLowerCase().includes(keyword) || 
                                        (item.description && item.description.toLowerCase().includes(keyword));
-                const matchesCat = (cat === 'all') || (item.category === cat);
+                const matchesCat = (targetCategory === 'all') || (item.category === targetCategory);
                 return matchesKeyword && matchesCat;
             });
+
+            // Sắp xếp
+            if (sortMode === 'price_asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortMode === 'price_desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (sortMode === 'name_asc') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            }
 
             renderServices(filtered);
         }
 
+        function resetAllFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('btnClearSearch').style.display = 'none';
+            document.getElementById('categoryFilter').value = 'all';
+            document.getElementById('sortFilter').value = 'default';
+            selectPill('all');
+        }
+
+        // ==========================================
+        // QUICK BOOKING MODAL LOGIC
+        // ==========================================
+        let currentBookingService = null;
+
+        function openBookingModal(serviceName, servicePrice) {
+            currentBookingService = { name: serviceName, price: servicePrice };
+            document.getElementById('modalServiceName').textContent = serviceName;
+            document.getElementById('modalServicePrice').textContent = formatVND(servicePrice);
+
+            // Tự động điền thông tin nếu đã đăng nhập
+            if (auth.currentUser) {
+                db.collection('users').doc(auth.currentUser.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const u = doc.data();
+                        if (u.fullName) document.getElementById('bookCustName').value = u.fullName;
+                        if (u.phone) document.getElementById('bookCustPhone').value = u.phone;
+                    }
+                }).catch(e => {});
+            }
+
+            document.getElementById('bookingModal').classList.add('open');
+        }
+
+        function closeBookingModal(e) {
+            if (e && e.target !== e.currentTarget && !e.target.classList.contains('btn-close-modal')) return;
+            document.getElementById('bookingModal').classList.remove('open');
+        }
+
+        async function submitQuickBooking(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitBooking');
+            const custName = document.getElementById('bookCustName').value.trim();
+            const custPhone = document.getElementById('bookCustPhone').value.trim();
+            const deviceModel = document.getElementById('bookDeviceModel').value.trim() || 'PC / Laptop phổ thông';
+            const apptDate = document.getElementById('bookApptDate').value;
+            const notes = document.getElementById('bookNotes').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang ghi nhận lịch hẹn...';
+
+            try {
+                // Tạo mã Ticket ID ngẫu nhiên định dạng chuẩn
+                const now = new Date();
+                const dateCode = now.getFullYear().toString() + (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
+                const randomSuffix = Math.floor(100 + Math.random() * 900);
+                const ticketId = `TK-${dateCode}-${randomSuffix}`;
+
+                const ticketData = {
+                    ticketId: ticketId,
+                    customerName: custName,
+                    customerPhone: custPhone,
+                    deviceType: deviceModel.toLowerCase().includes('pc') ? 'pc' : 'laptop',
+                    deviceBrand: deviceModel.split(' ')[0] || 'Chưa rõ',
+                    deviceModel: deviceModel,
+                    serviceInterest: currentBookingService ? currentBookingService.name : 'Dịch vụ tổng quát',
+                    estimatedCost: currentBookingService ? currentBookingService.price : 0,
+                    issueDescription: `Khách đặt lịch: ${currentBookingService ? currentBookingService.name : ''}. Ghi chú: ${notes || 'Không có'}`,
+                    appointmentDate: apptDate,
+                    status: 'cho_xu_ly',
+                    quotationStatus: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdBy: auth.currentUser ? auth.currentUser.uid : 'guest_web',
+                    source: 'online_booking'
+                };
+
+                await db.collection('tickets').add(ticketData);
+
+                showToast(`🎉 Đặt lịch thành công! Mã phiếu của bạn: ${ticketId}`, 'success', 4000);
+                closeBookingModal();
+                document.getElementById('quickBookingForm').reset();
+
+                // Chuyển hướng sang trang tra cứu sau 1.5 giây để khách thấy phiếu của mình
+                setTimeout(() => {
+                    window.location.href = `tracking.html?ticketId=${ticketId}&phone=${encodeURIComponent(custPhone)}`;
+                }, 1500);
+
+            } catch (err) {
+                console.error('Error creating booking ticket:', err);
+                showToast('Không thể gửi lịch hẹn: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Xác Nhận Đặt Lịch Hẹn';
+            }
+        }
+
+        // Fetch on load
         fetchServices();
     </script>
 </body>
