@@ -51,45 +51,46 @@
         </div>
 
         <!-- Metric Cards -->
+        <h2 class="sr-only">Tổng quan tình trạng thiết bị của bạn</h2>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-tools"></i></div>
                 <div class="stat-info">
-                    <h3 id="statUserActive">0</h3>
-                    <p>Thiết bị đang sửa chữa</p>
+                    <div class="stat-val" id="statUserActive">0</div>
+                    <p class="stat-lbl">Thiết bị đang sửa chữa</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon orange"><i class="fas fa-file-invoice-dollar"></i></div>
                 <div class="stat-info">
-                    <h3 id="statUserQuotePending">0</h3>
-                    <p>Báo giá đang chờ duyệt </p>
+                    <div class="stat-val" id="statUserQuotePending">0</div>
+                    <p class="stat-lbl">Báo giá đang chờ duyệt</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
                 <div class="stat-info">
-                    <h3 id="statUserCompleted">0</h3>
-                    <p>Phiếu đã hoàn thành</p>
+                    <div class="stat-val" id="statUserCompleted">0</div>
+                    <p class="stat-lbl">Phiếu đã hoàn thành</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="fas fa-laptop"></i></div>
                 <div class="stat-info">
-                    <h3 id="statUserDevices">0</h3>
-                    <p>Thiết bị đã đăng ký </p>
+                    <div class="stat-val" id="statUserDevices">0</div>
+                    <p class="stat-lbl">Thiết bị đã đăng ký</p>
                 </div>
             </div>
         </div>
 
         <!-- Alert for pending quotations (US.25) -->
-        <div id="quotationAlertBox" style="display: none; background: #fff3e0; border-left: 4px solid #f57c00; padding: 16px; border-radius: 8px; margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div id="quotationAlertBox" style="display: none; background: #fffbeb; border: 1px solid #f59e0b; padding: 18px 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                 <div>
-                    <h4 style="margin: 0 0 4px 0; color: #e65100;"><i class="fas fa-bell"></i> Bạn có báo giá sửa chữa mới cần duyệt!</h4>
-                    <p style="margin: 0; font-size: 0.9rem; color: #b78103;">Kỹ thuật viên đã kiểm tra máy và gửi báo giá linh kiện chi tiết. Vui lòng xác nhận đồng ý hoặc từ chối để KTV tiến hành.</p>
+                    <h3 style="margin: 0 0 5px 0; color: #78350f; font-size: 1.02rem;"><i class="fas fa-bell"></i> Bạn có báo giá sửa chữa mới cần duyệt!</h3>
+                    <p style="margin: 0; font-size: 0.88rem; color: #92400e; line-height: 1.5;">Kỹ thuật viên đã kiểm tra máy và gửi báo giá linh kiện chi tiết. Vui lòng xác nhận đồng ý hoặc từ chối để KTV tiến hành.</p>
                 </div>
-                <a href="my-tickets.html" class="btn-action warning" style="padding: 8px 16px; font-size: 0.85rem;">Xem & Duyệt ngay</a>
+                <a href="my-tickets.html" class="btn-action warning" style="padding: 9px 18px; font-size: 0.85rem; text-decoration: none; border-radius: 8px;">Xem & Duyệt ngay</a>
             </div>
         </div>
 

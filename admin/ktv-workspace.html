@@ -101,7 +101,7 @@
                 <input type="hidden" id="currentDocId">
                 <div class="modal-body">
                     <!-- Device Info -->
-                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                    <div style="background: var(--card-bg); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
                         <div class="form-row" style="margin-bottom: 5px;">
                             <div><strong>Thiết bị:</strong> <span id="mDevice"></span></div>
                             <div><strong>Serial:</strong> <span id="mSerial"></span></div>
@@ -116,8 +116,8 @@
                     </div>
 
                     <!-- 2. Tra Cứu & Đề Xuất Linh Kiện Trong Kho -->
-                    <div class="card" style="box-shadow: none; border: 1px solid #e0e0e0; margin-bottom: 15px;">
-                        <div class="card-header" style="padding: 10px 14px; background: #eef2f7;">
+                    <div class="card" style="box-shadow: none; border: 1px solid var(--border); margin-bottom: 15px;">
+                        <div class="card-header" style="padding: 10px 14px; background: var(--bg);">
                             <h4 style="margin: 0; font-size: 0.95rem;"><i class="fas fa-boxes"></i> 2. Chọn Linh Kiện Từ Kho Để Thay Thế / Sửa Chữa</h4>
                         </div>
                         <div class="card-body" style="padding: 12px;">
@@ -130,7 +130,7 @@
                                 </div>
                                 <div class="form-group" style="flex: 1; margin-bottom: 0;">
                                     <label>Tồn kho hiện có:</label>
-                                    <input type="text" id="mPartStock" readonly style="background: #f0f0f0; font-weight: bold;">
+                                    <input type="text" id="mPartStock" readonly style="background: var(--bg); font-weight: bold; color: var(--text);">
                                 </div>
                                 <div class="form-group" style="flex: 1; margin-bottom: 0;">
                                     <label>SL dùng:</label>
@@ -145,7 +145,7 @@
                             <!-- Bảng linh kiện / dịch vụ trong phiếu -->
                             <table style="width: 100%; margin-top: 10px;">
                                 <thead>
-                                    <tr style="background: #fafafa;">
+                                    <tr style="background: var(--bg);">
                                         <th>Linh kiện / Hạng mục sửa</th>
                                         <th style="width: 70px;">SL</th>
                                         <th style="width: 130px;">Đơn giá</th>

@@ -7,6 +7,8 @@
     <title>Bảng Điều Khiển Quản Trị - TechCare Pro</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN for Modern Operational Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
@@ -34,78 +36,170 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <!-- Page Header -->
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
             <div>
-                <h1>📊 Dashboard Quản Trị Hệ Thống</h1>
-                <p id="welcomeMsg">Chào mừng trở lại! Tổng quan tiến độ xử lý thiết bị hôm nay.</p>
+                <h1 style="margin: 0 0 4px 0; font-size: 1.55rem; color: var(--text-heading);"><i class="fas fa-chart-line" style="color: var(--accent);"></i> Dashboard Quản Trị Hệ Thống</h1>
+                <p id="welcomeMsg" style="margin: 0; color: var(--text-light); font-size: 0.9rem;">Tổng quan tiến độ xử lý thiết bị, điều phối kỹ thuật viên và cảnh báo vận hành hôm nay.</p>
             </div>
-            <div style="display: flex; gap: 10px;" id="dashboardQuickActions">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="dashboardQuickActions">
                 <a href="tickets.html?action=new" class="btn-action primary"><i class="fas fa-plus"></i> Tiếp nhận máy mới</a>
                 <a href="inventory.html" class="btn-action warning"><i class="fas fa-warehouse"></i> Kiểm tra kho</a>
             </div>
         </div>
 
-        <!-- 4 Key Statistic Cards -->
+        <!-- Bento Row 1: 4 Key Metric Cards -->
+        <h2 class="sr-only">Chỉ số vận hành hệ thống</h2>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-inbox"></i></div>
                 <div class="stat-info">
-                    <h3 id="statToday">0</h3>
-                    <p>Tiếp nhận hôm nay</p>
+                    <div class="stat-val" id="statToday">0</div>
+                    <p class="stat-lbl">Tiếp nhận hôm nay</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon orange"><i class="fas fa-wrench"></i></div>
                 <div class="stat-info">
-                    <h3 id="statProcessing">0</h3>
-                    <p>Đang kiểm tra / Sửa chữa</p>
+                    <div class="stat-val" id="statProcessing">0</div>
+                    <p class="stat-lbl">Đang kiểm tra / Sửa chữa</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
                 <div class="stat-info">
-                    <h3 id="statWaitingParts">0</h3>
-                    <p>Đang chờ linh kiện</p>
+                    <div class="stat-val" id="statWaitingParts">0</div>
+                    <p class="stat-lbl">Đang chờ linh kiện</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-info">
-                    <h3 id="statCompleted">0</h3>
-                    <p>Đã sửa xong / Bàn giao</p>
+                    <div class="stat-val" id="statCompleted">0</div>
+                    <p class="stat-lbl">Đã sửa xong / Bàn giao</p>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Summary Tables -->
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="fas fa-clock"></i> Phiếu Sửa Chữa Tiếp Nhận Gần Đây</h2>
-                <a href="tickets.html" style="color: var(--accent-dark); font-size: 0.9rem; text-decoration: none; font-weight: 600;">Xem tất cả phiếu &rarr;</a>
-            </div>
-            <div class="card-body no-pad">
-                <div id="ticketsLoading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Đang tải danh sách phiếu từ Firestore...</p>
+        <!-- Bento Row 2: 2 Operational Insights & Action Cards -->
+        <h2 class="sr-only">Cảnh báo và phân tích nhanh</h2>
+        <div class="bento-insights-grid">
+            <a href="inventory.html" class="insight-card alert-warning" id="insightStockCard">
+                <div class="insight-content">
+                    <h3 style="font-size: 0.95rem; margin: 0 0 3px 0;"><i class="fas fa-exclamation-circle"></i> Cảnh Báo Kho Linh Kiện</h3>
+                    <p id="insightStockText">Đang kiểm tra tồn kho tối thiểu...</p>
                 </div>
-                <table id="ticketsTable" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Mã Ticket</th>
-                            <th>Khách hàng</th>
-                            <th>Số ĐT</th>
-                            <th>Thiết bị PC/Laptop</th>
-                            <th>Trạng thái</th>
-                            <th>KTV phụ trách</th>
-                            <th>Ngày nhận</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ticketsBody"></tbody>
-                </table>
-                <div id="ticketsEmpty" class="empty-state" style="display: none;">
-                    <span class="icon">📋</span>
-                    <p>Chưa có phiếu bảo hành nào trong hệ thống.</p>
+                <span class="insight-badge" id="insightStockBadge" style="background: #b45309; color: #ffffff;">0 cảnh báo</span>
+            </a>
+            <a href="tickets.html" class="insight-card alert-info" id="insightQuoteCard">
+                <div class="insight-content">
+                    <h3 style="font-size: 0.95rem; margin: 0 0 3px 0;"><i class="fas fa-hourglass-half"></i> Phiếu Đang Chờ Báo Giá / Khách Duyệt</h3>
+                    <p id="insightQuoteText">Đang kiểm tra các phiếu chờ xác nhận...</p>
+                </div>
+                <span class="insight-badge" id="insightQuoteBadge" style="background: #0369a1; color: #ffffff;">0 phiếu</span>
+            </a>
+        </div>
+
+        <!-- Bento Row 3: 2-Column Operational Grid -->
+        <div class="dashboard-layout">
+            <!-- Left Column: Live Tickets & Trend Chart -->
+            <div class="dashboard-left-col">
+                <!-- Recent Live Tickets with Search & Filter -->
+                <div class="card">
+                    <div class="card-header" style="gap: 12px;">
+                        <div>
+                            <h2><i class="fas fa-clock"></i> Phiếu Sửa Chữa Tiếp Nhận Gần Đây</h2>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="ticketSearchInput" class="table-search-input" placeholder="🔍 Tìm mã, khách, máy..." oninput="handleFilterTickets()">
+                            <div class="filter-tabs">
+                                <button class="filter-tab active" data-filter="all" onclick="setTicketFilter('all', this)">Tất cả</button>
+                                <button class="filter-tab" data-filter="processing" onclick="setTicketFilter('processing', this)">Đang sửa</button>
+                                <button class="filter-tab" data-filter="waiting_parts" onclick="setTicketFilter('waiting_parts', this)">Chờ linh kiện</button>
+                                <button class="filter-tab" data-filter="completed" onclick="setTicketFilter('completed', this)">Đã xong</button>
+                            </div>
+                            <a href="tickets.html" style="color: var(--accent-dark); font-size: 0.85rem; text-decoration: none; font-weight: 600; white-space: nowrap;">Xem tất cả &rarr;</a>
+                        </div>
+                    </div>
+                    <div class="card-body no-pad">
+                        <div id="ticketsLoading" class="loading">
+                            <div class="spinner"></div>
+                            <p>Đang tải danh sách phiếu từ Firestore...</p>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table id="ticketsTable" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Mã Ticket</th>
+                                        <th>Khách hàng</th>
+                                        <th>Số ĐT</th>
+                                        <th>Thiết bị PC/Laptop</th>
+                                        <th>Trạng thái</th>
+                                        <th>KTV phụ trách</th>
+                                        <th>Ngày nhận</th>
+                                        <th style="text-align: right;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticketsBody"></tbody>
+                            </table>
+                        </div>
+                        <div id="ticketsEmpty" class="empty-state" style="display: none;">
+                            <span class="icon">📋</span>
+                            <p id="ticketsEmptyMsg">Chưa có phiếu bảo hành nào phù hợp bộ lọc.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Reception Trend Chart -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-area"></i> Xu Hướng Tiếp Nhận Thiết Bị (7 Ngày Qua)</h2>
+                        <span id="chartSummaryBadge" style="font-size: 0.8rem; font-weight: 600; color: var(--text-light);">Cập nhật tự động</span>
+                    </div>
+                    <div class="card-body" style="padding: 16px 20px;">
+                        <div style="position: relative; height: 190px; width: 100%;">
+                            <canvas id="weeklyReceptionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: KTV Workload Monitor & Critical Stock Alerts -->
+            <div class="dashboard-right-col" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- KTV Workload Monitor -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-cog"></i> Tải Công Việc KTV Trực Ca</h2>
+                        <a href="schedules.html" style="color: var(--accent-dark); font-size: 0.82rem; text-decoration: none; font-weight: 600;">Lịch trực &rarr;</a>
+                    </div>
+                    <div class="card-body" style="padding: 18px 20px;">
+                        <div id="ktvLoading" class="loading" style="padding: 20px;">
+                            <div class="spinner" style="width: 24px; height: 24px;"></div>
+                            <p style="font-size: 0.82rem;">Đang nạp phân bổ KTV...</p>
+                        </div>
+                        <div class="ktv-workload-list" id="ktvWorkloadList" style="display: none;"></div>
+                        <div id="ktvEmpty" class="empty-state" style="display: none; padding: 25px 10px;">
+                            <p style="margin: 0; font-size: 0.85rem;">Chưa có kỹ thuật viên nào đang nhận máy.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Stock Alerts -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-boxes"></i> Linh Kiện Cần Bổ Sung Gấp</h2>
+                        <a href="inventory.html" style="color: var(--accent-dark); font-size: 0.82rem; text-decoration: none; font-weight: 600;">Vào kho &rarr;</a>
+                    </div>
+                    <div class="card-body" style="padding: 18px 20px;">
+                        <div id="stockLoading" class="loading" style="padding: 20px;">
+                            <div class="spinner" style="width: 24px; height: 24px;"></div>
+                            <p style="font-size: 0.82rem;">Đang quét kho vật tư...</p>
+                        </div>
+                        <div class="stock-alert-list" id="stockAlertList" style="display: none;"></div>
+                        <div id="stockEmpty" class="empty-state" style="display: none; padding: 25px 10px;">
+                            <p style="margin: 0; font-size: 0.85rem; color: var(--success);"><i class="fas fa-check-circle"></i> Tồn kho đang ở mức an toàn.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -125,6 +219,9 @@
     <script>
         applyCachedUserInfo('dashboard');
         let currentUser = null;
+        let allTickets = [];
+        let currentFilter = 'all';
+        let trendChartInstance = null;
 
         async function initDashboard() {
             // Strictly enforce Admin / Employee roles
@@ -156,33 +253,57 @@
                 }
             }
 
-            loadStatisticsAndTickets();
+            // Load data in parallel
+            loadDashboardData();
         }
 
-        async function loadStatisticsAndTickets() {
+        async function loadDashboardData() {
             try {
-                const snapshot = await db.collection('tickets').orderBy('createdAt', 'desc').get();
-                
+                const [ticketSnap, inventorySnap] = await Promise.all([
+                    db.collection('tickets').orderBy('createdAt', 'desc').get(),
+                    db.collection('inventory').get().catch(err => {
+                        console.warn('Kho chưa có collection:', err);
+                        return { empty: true, forEach: () => {} };
+                    })
+                ]);
+
+                allTickets = [];
                 let todayCount = 0;
                 let processingCount = 0;
                 let waitingPartsCount = 0;
                 let completedCount = 0;
+                let quotePendingCount = 0;
 
                 const startOfToday = new Date();
                 startOfToday.setHours(0, 0, 0, 0);
 
-                const tableBody = document.getElementById('ticketsBody');
-                tableBody.innerHTML = '';
-                let displayedCount = 0;
+                // Map for KTV workload
+                const ktvWorkloadMap = {};
 
-                snapshot.forEach(doc => {
+                // Map for last 7 days count (Laptop vs PC)
+                const last7DaysLabels = [];
+                const laptop7DaysData = [0, 0, 0, 0, 0, 0, 0];
+                const pc7DaysData = [0, 0, 0, 0, 0, 0, 0];
+                const now = new Date();
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() - i);
+                    const dayStr = d.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' });
+                    last7DaysLabels.push(dayStr);
+                }
+
+                ticketSnap.forEach(doc => {
                     const t = doc.data();
+                    t._id = doc.id;
+                    allTickets.push(t);
+
                     const createdDate = t.createdAt ? (t.createdAt.toDate ? t.createdAt.toDate() : new Date(t.createdAt)) : null;
 
                     if (createdDate && createdDate >= startOfToday) {
                         todayCount++;
                     }
 
+                    // Count metrics
                     if (['dang_kiem_tra', 'dang_sua', 'cho_bao_gia'].includes(t.status)) {
                         processingCount++;
                     } else if (t.status === 'cho_linh_kien') {
@@ -191,45 +312,313 @@
                         completedCount++;
                     }
 
-                    if (displayedCount < 8) {
-                        displayedCount++;
-                        tableBody.innerHTML += `
-                            <tr>
-                                <td><strong>${t.ticketId || doc.id}</strong></td>
-                                <td>${t.customerName || 'Khách vãng lai'}</td>
-                                <td>${t.customerPhone || '---'}</td>
-                                <td>${t.deviceType === 'laptop' ? '💻' : '🖥️'} ${t.deviceBrand || ''} ${t.deviceModel || ''}</td>
-                                <td>${getStatusBadge(t.status)}</td>
-                                <td>${t.assignedKtvName || '<span style="color:#999;">Chưa phân công</span>'}</td>
-                                <td>${formatDate(t.createdAt)}</td>
-                                <td>
-                                    <a href="tickets.html?id=${doc.id}" class="btn-action primary" style="padding: 4px 10px; font-size: 0.8rem;">
-                                        <i class="fas fa-eye"></i> Chi tiết
-                                    </a>
-                                </td>
-                            </tr>
-                        `;
+                    if (t.status === 'cho_bao_gia') {
+                        quotePendingCount++;
+                    }
+
+                    // Tải công việc KTV (cho máy đang xử lý)
+                    if (['dang_kiem_tra', 'dang_sua', 'cho_bao_gia', 'cho_linh_kien'].includes(t.status) && t.assignedKtvName) {
+                        const ktvName = t.assignedKtvName;
+                        ktvWorkloadMap[ktvName] = (ktvWorkloadMap[ktvName] || 0) + 1;
+                    }
+
+                    // Phân bổ 7 ngày
+                    if (createdDate) {
+                        const diffTime = now.getTime() - createdDate.getTime();
+                        const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+                        if (diffDays >= 0 && diffDays < 7) {
+                            const index = 6 - diffDays;
+                            if (t.deviceType === 'laptop') {
+                                laptop7DaysData[index]++;
+                            } else {
+                                pc7DaysData[index]++;
+                            }
+                        }
                     }
                 });
 
+                // Update Stat Cards
                 document.getElementById('statToday').textContent = todayCount;
                 document.getElementById('statProcessing').textContent = processingCount;
                 document.getElementById('statWaitingParts').textContent = waitingPartsCount;
                 document.getElementById('statCompleted').textContent = completedCount;
 
-                document.getElementById('ticketsLoading').style.display = 'none';
+                // Update Insight Cards
+                document.getElementById('insightQuoteText').textContent = quotePendingCount > 0 
+                    ? `Hiện có ${quotePendingCount} phiếu cần gửi báo giá hoặc chờ khách duyệt.`
+                    : 'Không có phiếu nào đang tồn đọng chờ báo giá.';
+                document.getElementById('insightQuoteBadge').textContent = `${quotePendingCount} phiếu`;
 
-                if (snapshot.empty) {
-                    document.getElementById('ticketsEmpty').style.display = 'block';
-                } else {
-                    document.getElementById('ticketsTable').style.display = 'table';
-                }
+                // Render Live Tickets Table
+                renderTicketsTable();
+
+                // Render KTV Workload
+                renderKtvWorkload(ktvWorkloadMap);
+
+                // Render Stock Alerts
+                renderStockAlerts(inventorySnap);
+
+                // Render 7-day trend chart
+                renderTrendChart(last7DaysLabels, laptop7DaysData, pc7DaysData);
 
             } catch (err) {
                 console.error('Dashboard load error:', err);
-                showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
+                if (typeof showToast === 'function') {
+                    showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
+                }
                 document.getElementById('ticketsLoading').style.display = 'none';
             }
+        }
+
+        // ==================== TICKETS TABLE & FILTERING ====================
+        function setTicketFilter(filterType, btn) {
+            currentFilter = filterType;
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderTicketsTable();
+        }
+
+        function handleFilterTickets() {
+            renderTicketsTable();
+        }
+
+        function renderTicketsTable() {
+            const query = (document.getElementById('ticketSearchInput')?.value || '').toLowerCase().trim();
+            const tableBody = document.getElementById('ticketsBody');
+            tableBody.innerHTML = '';
+
+            let filtered = allTickets.filter(t => {
+                // Filter by category
+                if (currentFilter === 'processing') {
+                    if (!['dang_kiem_tra', 'dang_sua', 'cho_bao_gia'].includes(t.status)) return false;
+                } else if (currentFilter === 'waiting_parts') {
+                    if (t.status !== 'cho_linh_kien') return false;
+                } else if (currentFilter === 'completed') {
+                    if (!['hoan_thanh', 'da_ban_giao'].includes(t.status)) return false;
+                }
+
+                // Filter by search query
+                if (query) {
+                    const idStr = (t.ticketId || t._id || '').toLowerCase();
+                    const nameStr = (t.customerName || '').toLowerCase();
+                    const phoneStr = (t.customerPhone || '').toLowerCase();
+                    const modelStr = `${t.deviceBrand || ''} ${t.deviceModel || ''}`.toLowerCase();
+                    if (!idStr.includes(query) && !nameStr.includes(query) && !phoneStr.includes(query) && !modelStr.includes(query)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            // Limit display to top 8 items
+            const displayed = filtered.slice(0, 8);
+
+            displayed.forEach(t => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><strong>${t.ticketId || t._id}</strong></td>
+                        <td>${t.customerName || 'Khách vãng lai'}</td>
+                        <td>${t.customerPhone || '---'}</td>
+                        <td>${t.deviceType === 'laptop' ? '💻' : '🖥️'} ${t.deviceBrand || ''} ${t.deviceModel || ''}</td>
+                        <td>${getStatusBadge(t.status)}</td>
+                        <td>${t.assignedKtvName || '<span style="color:var(--text-muted);">Chưa phân công</span>'}</td>
+                        <td>${formatDate(t.createdAt)}</td>
+                        <td style="text-align: right;">
+                            <a href="tickets.html?id=${t._id}" class="btn-action primary" style="padding: 4px 10px; font-size: 0.8rem; text-decoration: none; border-radius: 6px;">
+                                <i class="fas fa-eye"></i> Chi tiết
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('ticketsLoading').style.display = 'none';
+
+            if (displayed.length === 0) {
+                document.getElementById('ticketsTable').style.display = 'none';
+                document.getElementById('ticketsEmpty').style.display = 'block';
+                document.getElementById('ticketsEmptyMsg').textContent = query
+                    ? `Không tìm thấy phiếu nào khớp với từ khóa "${query}".`
+                    : 'Không có phiếu bảo hành nào trong nhóm này.';
+            } else {
+                document.getElementById('ticketsTable').style.display = 'table';
+                document.getElementById('ticketsEmpty').style.display = 'none';
+            }
+        }
+
+        // ==================== KTV WORKLOAD MONITOR ====================
+        function renderKtvWorkload(workloadMap) {
+            const container = document.getElementById('ktvWorkloadList');
+            const loading = document.getElementById('ktvLoading');
+            const empty = document.getElementById('ktvEmpty');
+            loading.style.display = 'none';
+
+            const ktvEntries = Object.entries(workloadMap);
+            if (ktvEntries.length === 0) {
+                container.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            container.style.display = 'flex';
+            container.innerHTML = '';
+
+            // Sort KTVs with highest workload first
+            ktvEntries.sort((a, b) => b[1] - a[1]);
+
+            ktvEntries.forEach(([name, count]) => {
+                // Determine load severity: <= 3: safe, 4-5: medium, >= 6: high
+                let statusClass = 'safe';
+                let percent = Math.min((count / 6) * 100, 100);
+                if (count >= 6) {
+                    statusClass = 'high';
+                } else if (count >= 4) {
+                    statusClass = 'medium';
+                }
+
+                const initial = name.charAt(0).toUpperCase();
+
+                container.innerHTML += `
+                    <div class="ktv-workload-item">
+                        <div class="ktv-workload-head">
+                            <span class="ktv-workload-name">
+                                <span class="ktv-avatar-sm">${initial}</span>
+                                ${name}
+                            </span>
+                            <span class="ktv-workload-count">${count} thiết bị đang sửa</span>
+                        </div>
+                        <div class="workload-progress-bar">
+                            <div class="workload-progress-fill ${statusClass}" style="width: ${percent}%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ==================== CRITICAL STOCK ALERTS ====================
+        function renderStockAlerts(inventorySnap) {
+            const container = document.getElementById('stockAlertList');
+            const loading = document.getElementById('stockLoading');
+            const empty = document.getElementById('stockEmpty');
+            loading.style.display = 'none';
+
+            const lowStockItems = [];
+
+            if (inventorySnap && !inventorySnap.empty) {
+                inventorySnap.forEach(doc => {
+                    const item = doc.data();
+                    const qty = Number(item.quantity) || 0;
+                    const minQty = Number(item.minQuantity) || 2;
+                    if (qty <= minQty) {
+                        lowStockItems.push({
+                            name: item.name || 'Linh kiện',
+                            code: item.partCode || 'N/A',
+                            quantity: qty,
+                            minQuantity: minQty
+                        });
+                    }
+                });
+            }
+
+            // Update top insight card
+            document.getElementById('insightStockBadge').textContent = `${lowStockItems.length} linh kiện`;
+            document.getElementById('insightStockText').textContent = lowStockItems.length > 0
+                ? `Có ${lowStockItems.length} linh kiện dưới định mức tồn tối thiểu cần nhập gấp.`
+                : 'Tồn kho linh kiện đang đầy đủ, không có cảnh báo thiếu hàng.';
+
+            if (lowStockItems.length === 0) {
+                container.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            container.style.display = 'flex';
+            container.innerHTML = '';
+
+            // Display top 4 low stock items
+            lowStockItems.slice(0, 4).forEach(item => {
+                container.innerHTML += `
+                    <div class="stock-alert-item">
+                        <div class="stock-alert-info">
+                            <h3 style="font-size: 0.85rem; margin: 0 0 2px 0; color: var(--text-heading); font-weight: 600;">${item.name}</h3>
+                            <small>Mã: ${item.code} | Định mức: ${item.minQuantity}</small>
+                        </div>
+                        <span class="stock-badge-danger">Còn ${item.quantity}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // ==================== 7-DAY RECEPTION TREND CHART ====================
+        function renderTrendChart(labels, laptopData, pcData) {
+            const ctx = document.getElementById('weeklyReceptionChart')?.getContext('2d');
+            if (!ctx) return;
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            if (trendChartInstance) {
+                trendChartInstance.destroy();
+            }
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Laptop',
+                            data: laptopData,
+                            backgroundColor: '#0284c7',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: 'PC để bàn',
+                            data: pcData,
+                            backgroundColor: '#0f172a',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: textColor,
+                                font: { size: 11, family: "'Inter', sans-serif" },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            padding: 10,
+                            boxPadding: 4
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                color: textColor,
+                                font: { size: 10 }
+                            },
+                            grid: { color: gridColor }
+                        }
+                    }
+                }
+            });
         }
 
         window.addEventListener('DOMContentLoaded', initDashboard);

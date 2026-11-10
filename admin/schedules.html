@@ -34,6 +34,43 @@
         .shift-sang { background: #fff8e1; border-left: 3px solid #ffb300; color: #ff8f00; }
         .shift-chieu { background: #e3f2fd; border-left: 3px solid #1e88e5; color: #1565c0; }
         .shift-toi { background: #f3e5f5; border-left: 3px solid #8e24aa; color: #6a1b9a; }
+
+        /* Calendar Grid Layout - 7 ngay ngang */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .calendar-header {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .calendar-header small {
+            font-weight: 400;
+            opacity: 0.85;
+        }
+        .calendar-cell {
+            background: var(--card-bg);
+            padding: 10px 8px;
+            min-height: 100px;
+            vertical-align: top;
+        }
+        .calendar-cell span {
+            color: var(--text-secondary);
+        }
+
+        /* Dark mode cho shift badges */
+        [data-theme="dark"] .shift-sang { background: rgba(255, 179, 0, 0.15); color: #ffca28; }
+        [data-theme="dark"] .shift-chieu { background: rgba(30, 136, 229, 0.15); color: #64b5f6; }
+        [data-theme="dark"] .shift-toi { background: rgba(142, 36, 170, 0.15); color: #ce93d8; }
     </style>
 </head>
 <body>
