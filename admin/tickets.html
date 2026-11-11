@@ -843,7 +843,7 @@
                     <tr>
                         <td><input type="text" value="${q.name}" class="q-name" style="width:100%;" oninput="calculateQuoteTotal()"></td>
                         <td><input type="number" value="${q.qty || 1}" min="1" class="q-qty" style="width:100%;" oninput="calculateQuoteTotal()"></td>
-                        <td><input type="number" value="${q.price || 0}" step="10000" class="q-price" style="width:100%;" oninput="calculateQuoteTotal()"></td>
+                        <td><input type="number" value="${q.price || 0}" step="any" class="q-price" style="width:100%;" oninput="calculateQuoteTotal()"></td>
                         <td><strong class="q-subtotal">${formatVND(subTotal)}</strong></td>
                         <td><button type="button" style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest('tr').remove(); calculateQuoteTotal();">&times;</button></td>
                     </tr>
@@ -859,7 +859,7 @@
                 <tr>
                     <td><input type="text" placeholder="Tên linh kiện/dịch vụ" class="q-name" style="width:100%;" oninput="calculateQuoteTotal()"></td>
                     <td><input type="number" value="1" min="1" class="q-qty" style="width:100%;" oninput="calculateQuoteTotal()"></td>
-                    <td><input type="number" value="150000" step="10000" class="q-price" style="width:100%;" oninput="calculateQuoteTotal()"></td>
+                    <td><input type="number" value="150000" step="any" class="q-price" style="width:100%;" oninput="calculateQuoteTotal()"></td>
                     <td><strong class="q-subtotal">150.000 đ</strong></td>
                     <td><button type="button" style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest('tr').remove(); calculateQuoteTotal();">&times;</button></td>
                 </tr>
